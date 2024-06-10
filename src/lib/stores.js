@@ -6,6 +6,7 @@ export const dataStore = writable({
   products: [],
   reviews: [],
   columns: [],
+  forms: [],
   loading: true,
 });
 
@@ -15,12 +16,14 @@ export const loadData = async () => {
   const productsRes = await fetch("/data/products.json");
   const reviewsRes = await fetch("/data/reviews.json");
   const columnsRes = await fetch("/data/columns.json");
+  const formsRes = await fetch("/data/forms.json");
   
   const users = await usersRes.json();
   const brands = await brandsRes.json();
   const products = await productsRes.json();
   const reviews = await reviewsRes.json();
   const columns = await columnsRes.json();
+  const forms = await formsRes.json();
 
   dataStore.set({
     users,
@@ -28,6 +31,7 @@ export const loadData = async () => {
     products,
     reviews,
     columns,
+    forms,
     loading: false,
   });
 };
