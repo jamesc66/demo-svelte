@@ -14,7 +14,15 @@
 {#if storeData.loading}
   <p>Loading...</p>
 {:else}
-  <Table
+  {#each storeData.columns as columns}
+    <Table
+      title={columns.id}
+      data={storeData[columns.id]}
+      columns={columns.data}
+      {options}
+    />
+  {/each}
+  <!-- <Table
     title="users"
     data={storeData.users}
     columns={storeData.columns.users}
@@ -37,5 +45,5 @@
     data={storeData.reviews}
     columns={storeData.columns.reviews}
     {options}
-  />
+  /> -->
 {/if}
