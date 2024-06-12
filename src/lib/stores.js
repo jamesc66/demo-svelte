@@ -1,5 +1,6 @@
 import { writable } from 'svelte/store';
 
+// Initializing the writable store with default values
 export const dataStore = writable({
   users: [],
   brands: [],
@@ -10,28 +11,61 @@ export const dataStore = writable({
   loading: true,
 });
 
-export const loadData = async () => {
-  const usersRes = await fetch("/data/users.json");
-  const brandsRes = await fetch("/data/brands.json");
-  const productsRes = await fetch("/data/products.json");
-  const reviewsRes = await fetch("/data/reviews.json");
-  const columnsRes = await fetch("/data/columns.json");
-  const formsRes = await fetch("/data/forms.json");
-  
-  const users = await usersRes.json();
-  const brands = await brandsRes.json();
-  const products = await productsRes.json();
-  const reviews = await reviewsRes.json();
-  const columns = await columnsRes.json();
-  const forms = await formsRes.json();
+// Function to fetch JSON data from a given URL
+const fetchJsonData = async (url) => {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch data from ${url}: ${response.statusText}`);
+  }
+  return await response.json();
+};
 
-  dataStore.set({
-    users,
-    brands,
-    products,
-    reviews,
-    columns,
-    forms,
-    loading: false,
+// Function to fetch all component data based on the configuration
+const fetchComponentData = async (components, baseUrl) => {
+  const componentPromises = components.map(async (component) => {
+    const data = await fetchJsonData(baseUrl + component.data);
+    return { id: component.id, data };
   });
+
+  const componentsData = await Promise.all(componentPromises);
+
+  return componentsData.reduce((acc, component) => {
+    acc[component.id] = component.data;
+    return acc;
+  }, {});
+};
+
+// Function to fetch additional data (columns and forms)
+const fetchAdditionalData = async () => {
+  const [columns, forms] = await Promise.all([
+    fetchJsonData("/data/columns.json"),
+    fetchJsonData("/data/forms.json"),
+  ]);
+
+  return { columns, forms };
+};
+
+// Main function to load all data and update the store
+export const loadData = async () => {
+  try {
+    // Fetch the configuration file
+    const config = await fetchJsonData("/data/config.json");
+    const baseUrl = '/data/';
+
+    // Fetch component data and additional data concurrently
+    const [componentData, additionalData] = await Promise.all([
+      fetchComponentData(config.components, baseUrl),
+      fetchAdditionalData(),
+    ]);
+
+    // Update the data store with the fetched data
+    dataStore.set({
+      ...componentData,
+      ...additionalData,
+      loading: false,
+    });
+  } catch (error) {
+    console.error("Error loading data:", error.message);
+    dataStore.set({ loading: false });
+  }
 };
