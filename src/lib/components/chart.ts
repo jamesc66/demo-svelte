@@ -5,6 +5,7 @@ interface Config {
   width: number;
   height: number;
   metrics: string[];
+  accessor: string;
 }
 
 interface DataPoint {
@@ -19,12 +20,12 @@ interface ParsedDataPoint {
 
 const colors = d3.scaleOrdinal(d3.schemeCategory10);
 
-const parseData = (data: DataPoint[], metrics: string[]): ParsedDataPoint[] => {
+const parseData = (data: DataPoint[], metrics: string[], accessor: string): ParsedDataPoint[] => {
   const parseDate = d3.timeParse("%Y-%m-%d");
   return data.map((d) => ({
     date: parseDate(d.date) as Date,
     metrics: metrics.reduce((acc, metric) => {
-      acc[metric] = d.rating_metrics[metric];
+      acc[metric] = d[accessor][metric];
       return acc;
     }, {} as { [key: string]: number }),
   }));
@@ -74,7 +75,7 @@ const drawLines = (g: d3.Selection<SVGGElement, unknown, null, undefined>, parse
     g.append("path")
       .datum(parsedData)
       .attr("fill", "none")
-      .attr("stroke", colors(i))
+      .attr("stroke", colors(i.toString()))
       .attr("stroke-width", 1.5)
       .attr("d", metricLine)
       .attr("class", `line ${metric}`)
@@ -131,7 +132,7 @@ const drawLegend = (
       .append("rect")
       .attr("width", 10)
       .attr("height", 10)
-      .attr("fill", colors(i))
+      .attr("fill", colors(i.toString()))
       .attr("opacity", activeMetrics.has(metric) ? 1 : 0.3);
 
     legendRow
@@ -170,7 +171,7 @@ const drawChart = (
   const width = config.width - config.margin.left - config.margin.right;
   const height = config.height - config.margin.top - config.margin.bottom;
 
-  const parsedData = parseData(data, config.metrics);
+  const parsedData = parseData(data, config.metrics, config.accessor);
   const { x, y } = createScales(parsedData, config.metrics, width, height);
 
   svgElement.selectAll("*").remove();

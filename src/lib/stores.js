@@ -37,12 +37,13 @@ const fetchComponentData = async (components, baseUrl) => {
 
 // Function to fetch additional data (columns and forms)
 const fetchAdditionalData = async () => {
-  const [columns, forms] = await Promise.all([
+  const [columns, forms, charts] = await Promise.all([
     fetchJsonData("/data/columns.json"),
     fetchJsonData("/data/forms.json"),
+    fetchJsonData("/data/charts.json"),
   ]);
 
-  return { columns, forms };
+  return { columns, forms, charts };
 };
 
 // Main function to load all data and update the store

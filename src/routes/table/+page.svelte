@@ -22,28 +22,4 @@
       {options}
     />
   {/each}
-  <!-- <Table
-    title="users"
-    data={storeData.users}
-    columns={storeData.columns.users}
-    {options}
-  />
-  <Table
-    title="brands"
-    data={storeData.brands}
-    columns={storeData.columns.brands}
-    {options}
-  />
-  <Table
-    title="products"
-    data={storeData.products}
-    columns={storeData.columns.products}
-    {options}
-  />
-  <Table
-    title="reviews"
-    data={storeData.reviews}
-    columns={storeData.columns.reviews}
-    {options}
-  /> -->
 {/if}
