@@ -53,5 +53,9 @@
         { "id": "knowledge_base", "title": "Knowledge Base", "icon": "" }
       ]
     }
-  ]
+  ],
+  "animation": {
+    "duration": 1000,
+    "order": true
+  }
 }

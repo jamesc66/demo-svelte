@@ -1,17 +1,30 @@
 <script>
+  import { onMount } from "svelte";
   import HeadderDash from "../Headder_Dash.svelte";
   import SidebarDash from "../Sidebar_Dash.svelte";
+  import { fade } from "svelte/transition";
+  export let animationDuration = 1000;
+  export let animationOrder = false;
   export let nav;
+  export let loading = true;
+
+  onMount(() => {
+    loading = false;
+  });
 </script>
 
 <div class="page-template-container">
   <div class="page-template-left">
-    <SidebarDash {nav} />
+    <SidebarDash {animationOrder} {animationDuration} {nav} />
   </div>
   <div class="page-template-right">
-    <HeadderDash />
-    <div class="page-template-content">
-      <slot />
+    <HeadderDash {animationOrder} {animationDuration} />
+    <div in:fade class="page-template-content">
+      {#if !loading}
+        <div in:fade>
+          <slot />
+        </div>
+      {/if}
     </div>
   </div>
 </div>

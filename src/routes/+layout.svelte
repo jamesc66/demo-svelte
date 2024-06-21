@@ -14,7 +14,11 @@
 
 <!-- <Nav /> -->
 
-<PageTemplateDash nav={data.config.nav}>
+<PageTemplateDash
+  animationDuration={data.config.animation.duration}
+  nav={data.config.nav}
+  animationOrder={data.config.animation.order}
+>
   {#if $dataStore.loading}
     <p>Loading data...</p>
   {:else}

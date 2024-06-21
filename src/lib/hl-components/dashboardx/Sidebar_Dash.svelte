@@ -2,7 +2,10 @@
   import { onMount } from "svelte";
   import NavGroupDash from "./NavGroup_Dash.svelte";
   import { page } from "$app/stores";
+  import NavGroupsDash from "./NavGroups_Dash.svelte";
   export let nav;
+  export let animationDuration = 1000;
+  export let animationOrder = false;
 
   let logoUrl = "";
 
@@ -18,11 +21,11 @@
     }
   });
 
-  function handleOpen(mainTitle) {
-    if (open === mainTitle) {
+  function handleOpen(event: CustomEvent<string>) {
+    if (open === event.detail) {
       open = "";
     } else {
-      open = mainTitle;
+      open = event.detail;
     }
   }
 </script>
@@ -31,19 +34,14 @@
   <div class="sidebar-logo">
     <img src={logoUrl} alt="Logo" />
   </div>
-  <div class="sidebar-menu">
-    {#each nav as { title, items, icon, id }, i}
-      <NavGroupDash
-        {title}
-        {items}
-        {icon}
-        {id}
-        {open}
-        {active}
-        on:open={() => handleOpen(id)}
-      />
-    {/each}
-  </div>
+  <NavGroupsDash
+    {nav}
+    {open}
+    {active}
+    {animationDuration}
+    {animationOrder}
+    on:open={handleOpen}
+  />
 </div>
 
 <style>
