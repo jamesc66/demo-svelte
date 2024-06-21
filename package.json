@@ -1,36 +1,36 @@
 {
-	"name": "demo-svelte",
-	"version": "0.0.1",
-	"private": true,
-	"scripts": {
-		"dev": "vite dev",
-		"start": "vite dev --port 3004",
-		"build": "vite build",
-		"preview": "vite preview",
-		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-		"lint": "eslint ."
-	},
-	"devDependencies": {
-		"@sveltejs/adapter-auto": "^3.0.0",
-		"@sveltejs/kit": "^2.0.0",
-		"@sveltejs/vite-plugin-svelte": "^3.0.0",
-		"@types/eslint": "^8.56.7",
-		"@types/node": "^20.14.2",
-		"@types/tabulator-tables": "^6.2.0",
-		"eslint": "^9.0.0",
-		"eslint-plugin-svelte": "^2.36.0",
-		"globals": "^15.0.0",
-		"svelte": "^4.2.7",
-		"svelte-check": "^3.6.0",
-		"tslib": "^2.4.1",
-		"typescript": "^5.4.5",
-		"typescript-eslint": "^8.0.0-alpha.20",
-		"vite": "^5.0.3"
-	},
-	"type": "module",
-	"dependencies": {
-		"d3": "^7.9.0",
-		"tabulator-tables": "^6.2.1"
-	}
+  "name": "demo-svelte",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "vite dev",
+    "start": "vite dev --port 3004",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "@sveltejs/adapter-auto": "^3.0.0",
+    "@sveltejs/kit": "^2.0.0",
+    "@sveltejs/vite-plugin-svelte": "^3.0.0",
+    "@types/eslint": "^8.56.7",
+    "@types/node": "^20.14.2",
+    "@types/tabulator-tables": "^6.2.0",
+    "eslint": "^9.0.0",
+    "eslint-plugin-svelte": "^2.36.0",
+    "globals": "^15.0.0",
+    "svelte": "^4.2.7",
+    "svelte-check": "^3.6.0",
+    "tslib": "^2.4.1",
+    "typescript": "^5.4.5",
+    "typescript-eslint": "^8.0.0-alpha.20",
+    "vite": "^5.0.3"
+  },
+  "type": "module",
+  "dependencies": {
+    "d3": "^7.9.0",
+    "tabulator-tables": "^6.2.1"
+  }
 }

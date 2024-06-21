@@ -8,6 +8,7 @@ export const dataStore = writable({
   reviews: [],
   columns: [],
   forms: [],
+  config: [],
   loading: true,
 });
 
@@ -37,13 +38,14 @@ const fetchComponentData = async (components, baseUrl) => {
 
 // Function to fetch additional data (columns and forms)
 const fetchAdditionalData = async () => {
-  const [columns, forms, charts] = await Promise.all([
+  const [columns, forms, charts, config] = await Promise.all([
     fetchJsonData("/data/columns.json"),
     fetchJsonData("/data/forms.json"),
     fetchJsonData("/data/charts.json"),
+    fetchJsonData("/config.json"),
   ]);
 
-  return { columns, forms, charts };
+  return { columns, forms, charts, config };
 };
 
 // Main function to load all data and update the store

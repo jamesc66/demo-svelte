@@ -1,0 +1,57 @@
+{
+  "nav": [
+    {
+      "id": "portfolio",
+      "title": "Portfolio",
+      "icon": "Portfolio",
+      "items": [
+        { "id": "one_view", "title": "One View", "icon": "" },
+        { "id": "feed", "title": "Feed", "icon": "" },
+        { "id": "report", "title": "Report", "icon": "" }
+      ]
+    },
+    {
+      "id": "property",
+      "title": "Property",
+      "icon": "Property",
+      "items": [
+        { "id": "one_view", "title": "One View", "icon": "" },
+        { "id": "fire_co", "title": "Fire & CO", "icon": "" },
+        { "id": "environment", "title": "Environment", "icon": "" },
+        { "id": "energy", "title": "Energy", "icon": "" },
+        { "id": "wellbeing", "title": "Well_being", "icon": "" },
+        { "id": "devices", "title": "Devices", "icon": "" }
+      ]
+    },
+    {
+      "id": "admin",
+      "title": "Admin",
+      "icon": "Admin",
+      "items": [
+        { "id": "accounts", "title": "Accounts", "icon": "" },
+        { "id": "notifications", "title": "Notifications", "icon": "" },
+        { "id": "integrations", "title": "Integrations", "icon": "" }
+      ]
+    },
+    {
+      "id": "test",
+      "title": "Test",
+      "icon": "Test",
+      "items": [{ "id": "events", "title": "Events", "icon": "" }]
+    },
+    {
+      "id": "finance",
+      "title": "Finance",
+      "icon": "Finance",
+      "items": [{ "id": "licenses", "title": "Licenses", "icon": "" }]
+    },
+    {
+      "id": "help",
+      "title": "Help",
+      "icon": "Help",
+      "items": [
+        { "id": "knowledge_base", "title": "Knowledge Base", "icon": "" }
+      ]
+    }
+  ]
+}

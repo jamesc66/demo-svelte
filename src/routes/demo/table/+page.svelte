@@ -3,8 +3,6 @@
   import { dataStore } from "$lib/stores";
   import { get } from "svelte/store";
 
-  $: storeData = get(dataStore);
-
   const options = {
     pagination: "local",
     paginationSize: 5,
