@@ -30,8 +30,6 @@
     dispatch("open");
   }
 
-  $: console.log("open", active);
-
   // Configuration object for animation properties
   let animationConfig = {
     itemFlyDuration: 0,

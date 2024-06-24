@@ -49,7 +49,7 @@
 
   .page-template-content {
     margin: 20px;
-    padding: 20px;
+    padding: 10px;
     border-radius: 10px;
     background-color: white;
     height: 100%;

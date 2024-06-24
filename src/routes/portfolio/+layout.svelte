@@ -6,11 +6,22 @@
   import Grid from "$lib/hl-components/dashboardx/grid/GridTemplate_Dash.svelte";
 </script>
 
-<Row>
-  <Item>
-    <Insert insert="Feed" title="Timeline" />
-  </Item>
-  <Item>
-    <Insert insert="Map" />
-  </Item>
-</Row>
+<div>
+  <Grid>
+    <Row>
+      <Item>
+        <Insert insert="Bar" title="connected sites" />
+      </Item>
+      <Item>
+        <Insert insert="Bar" title="Connected Zones" />
+      </Item>
+      <Item>
+        <Insert insert="Bar" title="Monitored Rooms" />
+      </Item>
+      <Item>
+        <Insert insert="Bar" title="Connected Properties" />
+      </Item>
+    </Row>
+    <slot />
+  </Grid>
+</div>

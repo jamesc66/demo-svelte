@@ -1,3 +1,1 @@
-<div>
-  <h1>Report</h1>
-</div>
+<div>table</div>
