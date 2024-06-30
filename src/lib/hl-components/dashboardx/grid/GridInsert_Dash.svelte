@@ -1,6 +1,11 @@
 <script>
   export let insert;
   export let title = "";
+  export let subtitle = "";
+  export let accessors = null;
+  export let data = [];
+  export let columns = {};
+  export let config = {};
   let InsertComponent;
 
   // Dynamically import the insert component based on the insert
@@ -13,7 +18,15 @@
 
 {#if InsertComponent}
   <div class="insert-container">
-    <svelte:component this={InsertComponent} {title} />
+    <svelte:component
+      this={InsertComponent}
+      {title}
+      {subtitle}
+      {data}
+      {accessors}
+      {columns}
+      {config}
+    />
   </div>
 {:else}
   <div>{insert}</div>

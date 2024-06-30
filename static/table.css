@@ -1,0 +1,63 @@
+.tabulator-cell {
+    background: white;
+    border-bottom: 1px solid #ccc;
+}
+
+
+
+.tabulator-row .tabulator-cell {
+    display: inline-block;
+    position: relative;
+    box-sizing: border-box;
+    padding: 4px;
+    border-right: 1px solid white;
+    vertical-align: middle;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.tabulator {
+    position: relative;
+    border: none;
+    background-color: #888;
+    font-size: 14px;
+    text-align: left;
+    overflow: hidden;
+    transform: translatez(0);
+    color: black
+}
+
+.tabulator .tabulator-header {
+    position: relative;
+    box-sizing: border-box;
+    width: 100%;
+    border-bottom: 1px solid #ccc;
+    background-color: white;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+
+.tabulator .tabulator-header .tabulator-col .tabulator-col-content {
+    box-sizing: border-box;
+    position: relative;
+    padding: 4px;
+    background: white;
+    border-right: none;
+}
+
+.tabulator .tabulator-header .tabulator-col {
+    display: inline-block;
+    position: relative;
+    box-sizing: border-box;
+    border-right: none;
+    background: #e6e6e6;
+    text-align: left;
+    vertical-align: bottom;
+    overflow: hidden;
+}

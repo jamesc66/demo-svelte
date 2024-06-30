@@ -1,0 +1,12 @@
+.tabulator-row {
+    border-bottom: 1px solid #ccc;
+}
+
+.tabulator-cell {
+    border: none;
+    padding: 80px;
+}
+
+.tabulator-header {
+    display: none;
+}

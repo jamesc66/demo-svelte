@@ -24,5 +24,5 @@
     href="https://unpkg.com/tabulator-tables@4.9.1/dist/css/tabulator.min.css"
     rel="stylesheet"
   />
-  <link href="/table.css" rel="stylesheet" />
+  <link href="/details-table.css" rel="stylesheet" />
 </svelte:head>

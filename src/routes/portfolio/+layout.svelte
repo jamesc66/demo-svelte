@@ -10,16 +10,16 @@
   <Grid>
     <Row>
       <Item>
-        <Insert insert="Bar" title="connected sites" />
+        <Insert insert="Bar" subtitle="0" title="connected sites" />
       </Item>
       <Item>
-        <Insert insert="Bar" title="Connected Zones" />
+        <Insert insert="Bar" subtitle="0" title="Connected Zones" />
       </Item>
       <Item>
-        <Insert insert="Bar" title="Monitored Rooms" />
+        <Insert insert="Bar" subtitle="0" title="Monitored Rooms" />
       </Item>
       <Item>
-        <Insert insert="Bar" title="Connected Properties" />
+        <Insert insert="Bar" subtitle="0" title="Connected Properties" />
       </Item>
     </Row>
     <slot />
