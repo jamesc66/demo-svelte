@@ -9,6 +9,8 @@
   export let nav;
   export let loading = true;
 
+  const delay = 100;
+
   onMount(() => {
     loading = false;
   });
@@ -37,7 +39,7 @@
     <div in:fade class="page-template-content">
       {#if !loading}
         <div
-          in:fade={{ duration: animationDuration / 2 }}
+          in:fade={{ delay, duration: animationDuration - delay / 2 }}
           out:fade={{ duration: animationDuration / 2 }}
         >
           <slot />
