@@ -20,8 +20,15 @@
     items.filter((item) => `${id}/${item.id}` === active).length > 0;
   $: reverseOrder = childSelected; // New parameter to reverse the order of animations
 
+  let transitioning = false;
   function naviageToPage(subId) {
-    goto(`/${id}/${subId}`);
+    // goto(`/${id}/${subId}`);
+    transitioning = true;
+    dispatch("navigate", `/${id}/${subId}`);
+
+    setTimeout(() => {
+      transitioning = false;
+    }, animationDuration / 2);
   }
 
   const dispatch = createEventDispatcher();
@@ -60,11 +67,19 @@
                 animationConfig.itemFlyDelayStep,
             }}
           >
-            <Icon
-              icon="Circle"
-              size={10}
-              color={active === `${id}/${item.id}` ? "blue" : "transparent"}
-            />
+            <div class="nav-group-circle">
+              {#if !transitioning && active === `${id}/${item.id}`}
+                <div in:fly={{ x: -10 }} out:fly={{ x: -10 }}>
+                  <Icon
+                    icon="Circle"
+                    size={10}
+                    color={active === `${id}/${item.id}`
+                      ? "blue"
+                      : "transparent"}
+                  />
+                </div>
+              {/if}
+            </div>
             <NavItemDash
               title={item.title}
               on:click={() => naviageToPage(item.id)}
@@ -77,6 +92,13 @@
 </div>
 
 <style>
+  .nav-group-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 20px;
+  }
   .nav-group-container {
     cursor: pointer;
     border-top-left-radius: 30px;

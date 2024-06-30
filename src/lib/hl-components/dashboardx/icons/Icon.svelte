@@ -17,7 +17,7 @@
     <svelte:component this={IconComponent} {size} {color} />
   </div>
 {:else}
-  <p>{icon}</p>
+  <!-- <p>{icon}</p> -->
 {/if}
 
 <style>

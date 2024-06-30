@@ -92,7 +92,7 @@
   }
 
   .feed-item-content {
-    flex-grow: 1;
+    /* flex-grow: 1; */
     margin-left: 10px;
     box-sizing: border-box;
   }

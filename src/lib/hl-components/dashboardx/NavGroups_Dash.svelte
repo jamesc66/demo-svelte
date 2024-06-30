@@ -55,6 +55,7 @@
           {animationDuration}
           {animationOrder}
           on:open={() => handleOpen(id)}
+          on:navigate
           on:click
         />
       </div>

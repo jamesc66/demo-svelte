@@ -7,18 +7,7 @@
   let svgElement;
 
   export let data: any[] = [];
-  export let config = {
-    dataKey: "values",
-    seriesKey: "series",
-    nkey: "location",
-    show: ["grid", "axis", "areas", "points", "legend", "tooltip", "lines"],
-    margin: { top: 20, right: 150, bottom: 30, left: 50 },
-    width: 960,
-    height: 500,
-    areaOpacity: 0.3,
-    lineWidth: 1.5,
-    pointRadius: 2,
-  };
+  export let config = {};
 
   // Define the series variable
   let series = Array.from(new Set(data.map((d) => d[config.seriesKey])));
@@ -28,15 +17,33 @@
   $: height = config.height - margin.top - margin.bottom;
 
   let show = {
-    grid: config.show.includes("grid"),
-    axis: config.show.includes("axis"),
-    areas: config.show.includes("areas"),
-    lines: config.show.includes("lines"),
-    points: config.show.includes("points"),
-    legend: config.show.includes("legend"),
-    tooltip: config.show.includes("tooltip"),
-    heat: config.show.includes("heat"),
+    grid: config.defaultFeatures
+      ? config.defaultFeatures.includes("grid")
+      : config.show.includes("grid"),
+    axis: config.defaultFeatures
+      ? config.defaultFeatures.includes("axis")
+      : config.show.includes("axis"),
+    areas: config.defaultFeatures
+      ? config.defaultFeatures.includes("areas")
+      : config.show.includes("areas"),
+    lines: config.defaultFeatures
+      ? config.defaultFeatures.includes("lines")
+      : config.show.includes("lines"),
+    points: config.defaultFeatures
+      ? config.defaultFeatures.includes("points")
+      : config.show.includes("points"),
+    legend: config.defaultFeatures
+      ? config.defaultFeatures.includes("legend")
+      : config.show.includes("legend"),
+    tooltip: config.defaultFeatures
+      ? config.defaultFeatures.includes("tooltip")
+      : config.show.includes("tooltip"),
+    heat: config.defaultFeatures
+      ? config.defaultFeatures.includes("heat")
+      : config.show.includes("heat"),
   };
+
+  $: console.log(data);
 
   let selectedSeries = new Set(data.map((d) => d.location));
   const color = d3.scaleOrdinal(config.colors);
@@ -90,23 +97,47 @@
     svg
       .append("g")
       .attr("class", "grid x-grid")
+      .attr("color", "lightgray")
       .attr("transform", `translate(0,${height})`)
-      .call(d3.axisBottom(x).ticks(10).tickSize(-height).tickFormat(""));
+      .call(
+        d3.axisBottom(x).ticks(config.ticks).tickSize(-height).tickFormat("")
+      );
 
     svg
       .append("g")
+      .attr("color", "lightgray")
       .attr("class", "grid y-grid")
-      .call(d3.axisLeft(y).ticks(10).tickSize(-width).tickFormat(""));
+      .call(d3.axisLeft(y).ticks(config.ticks).tickSize(-width).tickFormat(""));
   }
 
   function addAxes(svg, x, y, height) {
-    svg
+    const xAxis = svg
       .append("g")
       .attr("class", "axis x-axis")
       .attr("transform", `translate(0,${height})`)
-      .call(d3.axisBottom(x).ticks(10).tickFormat(d3.timeFormat("%Y-%m-%d")));
+      // .call(d3.axisBottom(x).ticks(config.ticks).tickFormat(d3.timeFormat("%b")));
+      // .call(d3.axisBottom(x).ticks(config.ticks).tickFormat(d3.timeFormat("%d/%m/%Y")));
+      .call(
+        d3
+          .axisBottom(x)
+          .ticks(config.ticks)
+          .tickFormat(d3.timeFormat("%d/%m/%Y"))
+      );
 
-    svg.append("g").attr("class", "axis y-axis").call(d3.axisLeft(y));
+    const yAxis = svg
+      .append("g")
+      .attr("class", "axis y-axis")
+      .call(d3.axisLeft(y));
+
+    // Set the color of the axis lines to blue
+    xAxis.selectAll("path").attr("stroke", "#4083b9");
+    xAxis.selectAll("line").attr("stroke", "#4083b9");
+    yAxis.selectAll("path").attr("stroke", "#4083b9");
+    yAxis.selectAll("line").attr("stroke", "#4083b9");
+
+    // Set the color of the axis text to black
+    xAxis.selectAll("text").attr("fill", "#000000");
+    yAxis.selectAll("text").attr("fill", "#000000");
   }
 
   function addAreas(svg, data, x, y, config) {

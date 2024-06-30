@@ -64,12 +64,13 @@
       "axis",
       "areas",
       "points",
-      "legend",
-      "tooltip",
+      // "legend",
+      // "tooltip",
       "lines",
       "heat",
     ],
     togle: true,
+    defaultFeatures: ["axis", "lines", "areas", "grid", "points"],
 
     margin: { top: 40, right: 100, bottom: 0, left: 100 },
     width: 500,
@@ -95,7 +96,19 @@
     yKey: "value",
     dataKey: "values",
     seriesKey: "location",
-    show: ["grid", "axis", "areas", "points", "legend", "tooltip", "lines"],
+    ticks: 5,
+    show: [
+      "grid",
+      "axis",
+      "areas",
+      "points",
+      //  "legend",
+      // "tooltip",
+      "lines",
+    ],
+
+    // defaultSeries: ["humidity"],
+    defaultFeatures: ["axis", "lines"],
 
     margin: { top: 20, right: 40, bottom: 40, left: 40 },
     width: 500,
@@ -119,7 +132,7 @@
   <Row>
     <Column>
       <Row>
-        <Item title="test">
+        <Item title="Damp & Mould Risk">
           <Insert
             insert="Ring"
             config={{
@@ -128,10 +141,9 @@
               ringColor: "red",
               ringLabel: "High",
             }}
-            title="Damp & Mould Risk"
           />
         </Item>
-        <Item title="test">
+        <Item title="Heat Loss Risk">
           <Insert
             insert="Ring"
             config={{
@@ -140,7 +152,6 @@
               ringColor: "red",
               ringLabel: "High",
             }}
-            title="Heat Loss Risk"
           />
         </Item>
       </Row>
@@ -165,7 +176,7 @@
     </Column>
 
     <Column>
-      <Item title="Damp and Mould Risk Components" drawer={false}>
+      <Item title="Damp and Mould Risk Components" drawer={true}>
         <Insert insert="Chart" {data} config={radarConfig} />
       </Item>
       <Item title="Humidity">

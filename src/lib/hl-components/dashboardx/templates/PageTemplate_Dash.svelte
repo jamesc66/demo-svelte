@@ -3,6 +3,7 @@
   import HeadderDash from "../Headder_Dash.svelte";
   import SidebarDash from "../Sidebar_Dash.svelte";
   import { fade } from "svelte/transition";
+  import { goto } from "$app/navigation";
   export let animationDuration = 1000;
   export let animationOrder = false;
   export let nav;
@@ -11,17 +12,34 @@
   onMount(() => {
     loading = false;
   });
+
+  const handleNavigation = (event) => {
+    loading = true;
+
+    setTimeout(() => {
+      goto(event.detail);
+      loading = false;
+    }, animationDuration / 2);
+  };
 </script>
 
 <div class="page-template-container">
   <div class="page-template-left">
-    <SidebarDash {animationOrder} {animationDuration} {nav} />
+    <SidebarDash
+      on:navigate={handleNavigation}
+      {animationOrder}
+      {animationDuration}
+      {nav}
+    />
   </div>
   <div class="page-template-right">
     <HeadderDash {animationOrder} {animationDuration} />
     <div in:fade class="page-template-content">
       {#if !loading}
-        <div in:fade>
+        <div
+          in:fade={{ duration: animationDuration / 2 }}
+          out:fade={{ duration: animationDuration / 2 }}
+        >
           <slot />
         </div>
       {/if}

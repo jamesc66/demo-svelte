@@ -41,6 +41,7 @@
     {animationDuration}
     {animationOrder}
     on:open={handleOpen}
+    on:navigate
   />
 </div>
 

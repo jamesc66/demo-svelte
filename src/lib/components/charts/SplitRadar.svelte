@@ -369,14 +369,30 @@
   export let allData: any[] = [];
 
   let show = {
-    grid: config.show.includes("grid"),
-    axis: config.show.includes("axis"),
-    areas: config.show.includes("areas"),
-    lines: config.show.includes("lines"),
-    points: config.show.includes("points"),
-    legend: config.show.includes("legend"),
-    tooltip: config.show.includes("tooltip"),
-    heat: config.show.includes("heat"),
+    grid: config.defaultFeatures
+      ? config.defaultFeatures.includes("grid")
+      : config.show.includes("grid"),
+    axis: config.defaultFeatures
+      ? config.defaultFeatures.includes("axis")
+      : config.show.includes("axis"),
+    areas: config.defaultFeatures
+      ? config.defaultFeatures.includes("areas")
+      : config.show.includes("areas"),
+    lines: config.defaultFeatures
+      ? config.defaultFeatures.includes("lines")
+      : config.show.includes("lines"),
+    points: config.defaultFeatures
+      ? config.defaultFeatures.includes("points")
+      : config.show.includes("points"),
+    legend: config.defaultFeatures
+      ? config.defaultFeatures.includes("legend")
+      : config.show.includes("legend"),
+    tooltip: config.defaultFeatures
+      ? config.defaultFeatures.includes("tooltip")
+      : config.show.includes("tooltip"),
+    heat: config.defaultFeatures
+      ? config.defaultFeatures.includes("heat")
+      : config.show.includes("heat"),
   };
 
   let nestedData;
