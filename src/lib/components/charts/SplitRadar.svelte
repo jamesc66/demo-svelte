@@ -20,38 +20,14 @@
     drawToggles,
     drawLegend,
     addAnnotations,
+    initializeShow,
   } from "./splitRadar";
 
   export let config;
   export let data: any[] = [{ room: "", insight: "", value: 0 }];
   export let allData: any[] = [];
 
-  let show = {
-    grid: config.defaultFeatures
-      ? config.defaultFeatures.includes("grid")
-      : config.show.includes("grid"),
-    axis: config.defaultFeatures
-      ? config.defaultFeatures.includes("axis")
-      : config.show.includes("axis"),
-    areas: config.defaultFeatures
-      ? config.defaultFeatures.includes("areas")
-      : config.show.includes("areas"),
-    lines: config.defaultFeatures
-      ? config.defaultFeatures.includes("lines")
-      : config.show.includes("lines"),
-    points: config.defaultFeatures
-      ? config.defaultFeatures.includes("points")
-      : config.show.includes("points"),
-    legend: config.defaultFeatures
-      ? config.defaultFeatures.includes("legend")
-      : config.show.includes("legend"),
-    tooltip: config.defaultFeatures
-      ? config.defaultFeatures.includes("tooltip")
-      : config.show.includes("tooltip"),
-    heat: config.defaultFeatures
-      ? config.defaultFeatures.includes("heat")
-      : config.show.includes("heat"),
-  };
+  let show = initializeShow(config);
 
   let nestedData;
   let color = d3.scaleOrdinal(config.colors);
@@ -153,7 +129,8 @@
         config
       );
 
-    shadeSegments(svg, rScale, angleSlice, config, shadedSegments);
+    if (show.shadedSegments)
+      shadeSegments(svg, rScale, angleSlice, config, shadedSegments);
 
     if (show.grid) drawGrid(svg, radius);
     if (show.axis) drawAxis(svg, filteredData, rScale, angleSlice, config);
@@ -182,8 +159,7 @@
         config
       );
 
-    // Add annotations
-    addAnnotations(svg, radius);
+    if (show.annotations) addAnnotations(svg, radius);
   }
 
   function toggleSeries(d: any) {
@@ -230,27 +206,6 @@
 </div>
 
 <style>
-  .toggles {
-    display: flex;
-    flex-direction: column;
-    margin-top: 20px;
-    margin-right: 20px;
-  }
-  .toggles div {
-    display: flex;
-    align-items: center;
-    margin-bottom: 5px;
-  }
-  .tooltip {
-    position: absolute;
-    text-align: center;
-    padding: 5px;
-    font: 12px sans-serif;
-    background: lightsteelblue;
-    border: 0px;
-    border-radius: 8px;
-    pointer-events: none;
-  }
   .container {
     display: flex;
     justify-content: space-between;

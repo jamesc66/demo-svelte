@@ -64,14 +64,21 @@
       "axis",
       "areas",
       "points",
-      // "legend",
-      // "tooltip",
       "lines",
       "heat",
+      "annotations",
+      "shadedSegments",
     ],
     togle: true,
-    defaultFeatures: ["axis", "lines", "areas", "grid", "points"],
-
+    defaultFeatures: [
+      "axis",
+      "lines",
+      "areas",
+      "grid",
+      "points",
+      "annotations",
+      "shadedSegments",
+    ],
     margin: { top: 40, right: 100, bottom: 0, left: 100 },
     width: 500,
     height: 400,
@@ -79,13 +86,16 @@
       "#4383DD", // Blue
       "#F47ED4", // Pink
       "#57CAAB", // Teal
-
       "#DDC543", // Yellow (Triadic to Blue)
       "#DD4343", // Red (Triadic to Teal)
       "#DD8743", // Orange (Triadic to Pink)
       "#3560A8", // Darker Blue Shade
       "#DF6BBD", // Darker Pink Shade
       "#4AA68F", // Darker Teal Shade
+    ],
+    shadedSegments: [
+      { startAxis: 2.5, endAxis: 3.5, color: "white", opacity: 1 },
+      { startAxis: 5.5, endAxis: 6.5, color: "white", opacity: 1 },
     ],
   };
 
@@ -97,19 +107,8 @@
     dataKey: "values",
     seriesKey: "location",
     ticks: 5,
-    show: [
-      "grid",
-      "axis",
-      "areas",
-      "points",
-      //  "legend",
-      // "tooltip",
-      "lines",
-    ],
-
-    // defaultSeries: ["humidity"],
+    show: ["grid", "axis", "areas", "points", "lines"],
     defaultFeatures: ["axis", "lines"],
-
     margin: { top: 20, right: 40, bottom: 40, left: 40 },
     width: 500,
     height: 400,
@@ -117,7 +116,6 @@
       "#4383DD", // Blue
       "#F47ED4", // Pink
       "#57CAAB", // Teal
-
       "#DDC543", // Yellow (Triadic to Blue)
       "#DD4343", // Red (Triadic to Teal)
       "#DD8743", // Orange (Triadic to Pink)

@@ -451,3 +451,31 @@ export function addAnnotations(svg: any, radius: number) {
     .attr("marker-start", "url(#arrow-down)")
     .attr("marker-end", "url(#arrow-up)");
 }
+
+
+export function initializeShow(config: any) {
+  const defaultFeatures = config.defaultFeatures || [];
+  const features = [
+    'grid',
+    'axis',
+    'areas',
+    'lines',
+    'points',
+    // 'legend',
+    // 'tooltip',
+    'heat',
+    'shadedSegments',
+    'annotations'
+  ];
+
+  const show: { [key: string]: boolean } = {};
+
+  features.forEach(feature => {
+    show[feature] = defaultFeatures.length > 0
+      ? defaultFeatures.includes(feature)
+      : config.show.includes(feature);
+  });
+
+  return show;
+}
+

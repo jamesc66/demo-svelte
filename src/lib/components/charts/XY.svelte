@@ -17,29 +17,25 @@
   } from "./xy";
 
   let svgElement;
-
   export let data: any[] = [];
   export let config = {};
 
-  // Define the series variable
   let series = Array.from(new Set(data.map((d) => d[config.seriesKey])));
+  let show = initializeShow(config);
+  let selectedSeries = new Set(data.map((d) => d.location));
+
+  const { color, seriesColorMap } = useColors(config, series);
 
   $: margin = config.margin;
   $: width = config.width - margin.left - margin.right;
   $: height = config.height - margin.top - margin.bottom;
-
-  let show = initializeShow(config);
-
-  $: console.log(show);
-
-  let selectedSeries = new Set(data.map((d) => d.location));
-  const { color, seriesColorMap } = useColors(config, series);
 
   function startGraph() {
     d3.select(svgElement).selectAll("*").remove();
 
     const svg = createSvg(svgElement, width, height, margin);
     const { x, y } = useScales(data, width, height);
+    const graphGroup = svg.append("g").attr("clip-path", "url(#clip)");
 
     useZoom(
       svgElement,
@@ -62,22 +58,12 @@
     if (show.grid) addGridLines(svg, x, y, width, height, config);
     if (show.axis) addAxes(svg, x, y, height, config);
 
-    const graphGroup = svg.append("g").attr("clip-path", "url(#clip)");
-
     if (show.areas)
       addAreas(graphGroup, data, x, y, config, color, selectedSeries);
     if (show.lines)
       addLines(graphGroup, data, x, y, config, color, selectedSeries);
     if (show.points)
       addPoints(graphGroup, data, x, y, config, color, selectedSeries);
-  }
-
-  onMount(() => {
-    startGraph();
-  });
-
-  $: if (data.length) {
-    startGraph();
   }
 
   function toggleShow(option: string) {
@@ -93,11 +79,18 @@
     }
     startGraph();
   }
+
+  onMount(() => {
+    startGraph();
+  });
+
+  $: if (data.length) {
+    startGraph();
+  }
 </script>
 
 <div class="container">
   <svg bind:this={svgElement}></svg>
-
   <div class="controls">
     <Legend {series} {selectedSeries} {seriesColorMap} {toggleSeries} />
     <Toggles {show} {toggleShow} />
