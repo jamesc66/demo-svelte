@@ -107,11 +107,12 @@
     dataKey: "values",
     seriesKey: "location",
     ticks: 5,
-    show: ["grid", "axis", "areas", "points", "lines"],
-    defaultFeatures: ["axis", "lines"],
+    show: ["grid", "axis", "areas", "points", "lines", "enableZoom"],
+    defaultFeatures: ["axis", "lines", "enableZoom"],
     margin: { top: 20, right: 40, bottom: 40, left: 40 },
     width: 500,
     height: 400,
+    enableZoom: true,
     colors: [
       "#4383DD", // Blue
       "#F47ED4", // Pink

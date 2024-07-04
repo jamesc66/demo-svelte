@@ -479,3 +479,30 @@ export function initializeShow(config: any) {
   return show;
 }
 
+
+
+export function initializeRadarElements(
+  svg,
+  filteredData,
+  rScale,
+  angleSlice,
+  initialLoad,
+  seriesColorMap,
+  config,
+  show,
+  allData,
+  shadedSegments,
+  radius
+) {
+  if (show.areas) drawRadarAreas(svg, filteredData, rScale, angleSlice, initialLoad, seriesColorMap, config);
+  if (show.lines) drawRadarLines(svg, filteredData, rScale, angleSlice, initialLoad, seriesColorMap, config);
+  if (show.shadedSegments) shadeSegments(svg, rScale, angleSlice, config, shadedSegments);
+  if (show.grid) drawGrid(svg, radius);
+  if (show.axis) drawAxis(svg, filteredData, rScale, angleSlice, config);
+  if (show.legend) drawLegend();
+  if (show.tooltip) addTooltip();
+  if (config.togle) drawToggles();
+  if (show.heat) drawHeatPoint(svg, allData, rScale, angleSlice, config, color, selectedSeries);
+  if (show.points) drawRadarPoints(svg, filteredData, rScale, angleSlice, initialLoad, seriesColorMap, show, config);
+  if (show.annotations) addAnnotations(svg, radius);
+}

@@ -1,43 +1,42 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import * as d3 from "d3";
-  import Legend from "./Legend.svelte";
-  import Toggles from "./Toggles.svelte";
   import {
     createSvg,
-    addGridLines,
-    addAxes,
-    addAreas,
-    addLines,
-    addPoints,
     initializeShow,
     useScales,
     useColors,
     useZoom,
+    initializeXYElements,
   } from "./xy";
+  import * as d3 from "d3";
+  import Legend from "./Legend.svelte";
+  import Toggles from "./Toggles.svelte";
 
   let svgElement;
   export let data: any[] = [];
-  export let config = {};
+  export let config: any = {};
 
   let series = Array.from(new Set(data.map((d) => d[config.seriesKey])));
-  let show = initializeShow(config);
+  let show = initializeShow({ defaultFeatures: config.defaultFeatures });
   let selectedSeries = new Set(data.map((d) => d.location));
 
-  const { color, seriesColorMap } = useColors(config, series);
-
-  $: margin = config.margin;
-  $: width = config.width - margin.left - margin.right;
-  $: height = config.height - margin.top - margin.bottom;
+  const { color, seriesColorMap } = useColors({
+    colors: config.colors,
+    series,
+  });
 
   function startGraph() {
+    const margin = config.margin;
+    const width = config.width - margin.left - margin.right;
+    const height = config.height - margin.top - margin.bottom;
+
     d3.select(svgElement).selectAll("*").remove();
 
     const svg = createSvg(svgElement, width, height, margin);
     const { x, y } = useScales(data, width, height);
     const graphGroup = svg.append("g").attr("clip-path", "url(#clip)");
 
-    useZoom(
+    useZoom({
       svgElement,
       x,
       y,
@@ -48,22 +47,30 @@
       data,
       color,
       selectedSeries,
-      addGridLines,
-      addAxes,
-      addAreas,
-      addLines,
-      addPoints
-    );
+      ticks: config.ticks,
+      lineWidth: config.lineWidth,
+      pointWidth: config.pointWidth,
+      seriesKey: config.seriesKey,
+    });
 
-    if (show.grid) addGridLines(svg, x, y, width, height, config);
-    if (show.axis) addAxes(svg, x, y, height, config);
-
-    if (show.areas)
-      addAreas(graphGroup, data, x, y, config, color, selectedSeries);
-    if (show.lines)
-      addLines(graphGroup, data, x, y, config, color, selectedSeries);
-    if (show.points)
-      addPoints(graphGroup, data, x, y, config, color, selectedSeries);
+    initializeXYElements({
+      svg,
+      graphGroup,
+      data,
+      x,
+      y,
+      config,
+      color,
+      selectedSeries,
+      show,
+      width,
+      height,
+      ticks: config.ticks,
+      lineWidth: config.lineWidth,
+      pointWidth: config.pointWidth,
+      seriesKey: config.seriesKey,
+      config,
+    });
   }
 
   function toggleShow(option: string) {
