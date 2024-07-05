@@ -1,15 +1,135 @@
 import * as d3 from "d3";
 
-export function parseDate(dateStr: string) {
+export interface XYConfig {
+  variant: string;
+  nKey: string;
+  xKey: string;
+  yKey: string;
+  dKey: string;
+  ticks: number;
+  lineWidth: number;
+  pointWidth: number;
+  show: string[];
+  defaultFeatures: string[];
+  margin: {
+    top: number;
+    right: number;
+    bottom: number;
+    left: number;
+  };
+  width: number;
+  height: number;
+  enableZoom: boolean;
+  colors: string[];
+}
+
+interface DataEntry {
+  [key: string]: any;
+}
+
+interface Series {
+  [key: string]: any;
+  dKey: DataEntry[];
+}
+
+interface GraphParamsBase {
+  svg: d3.Selection<SVGGElement, unknown, null, undefined>;
+  data: Series[];
+  x: d3.ScaleTime<number, number>;
+  y: d3.ScaleLinear<number, number>;
+  color: d3.ScaleOrdinal<string, unknown>;
+  selectedSeries: Set<string>;
+  nKey: string;
+  xKey: string;
+  yKey: string;
+  dKey: string;
+  newScales?: {
+    x: d3.ScaleTime<number, number>;
+    y: d3.ScaleLinear<number, number>;
+  };
+}
+
+interface GridAndAxesParams {
+  svg: d3.Selection<SVGGElement, unknown, null, undefined>;
+  x: d3.ScaleTime<number, number>;
+  y: d3.ScaleLinear<number, number>;
+  width: number;
+  height: number;
+  ticks: number;
+}
+
+interface AddLegendParams {
+  svg: d3.Selection<SVGGElement, unknown, null, undefined>;
+  data: Series[];
+  width: number;
+  color: d3.ScaleOrdinal<string, unknown>;
+  selectedSeries: Set<string>;
+  toggleSeries: (nKey: string) => void;
+  nKey: string;
+}
+
+interface UseScalesParams {
+  data: Series[];
+  width: number;
+  height: number;
+  xKey: string;
+  yKey: string;
+  dKey: string;
+}
+
+interface UseColorsParams {
+  colors: string[];
+  series: string[];
+}
+
+interface InitializeShowParams {
+  defaultFeatures: string[];
+}
+
+interface InitializeXYElementsParams extends GraphParamsBase {
+  graphGroup: d3.Selection<SVGGElement, unknown, null, undefined>;
+  show: { [key: string]: boolean };
+  width: number;
+  height: number;
+  lineWidth: number;
+  pointWidth: number;
+  ticks: number;
+}
+
+interface UseZoomParams {
+  svgElement: SVGSVGElement;
+  x: d3.ScaleTime<number, number>;
+  y: d3.ScaleLinear<number, number>;
+  width: number;
+  height: number;
+  show: { [key: string]: boolean };
+  data: Series[];
+  color: d3.ScaleOrdinal<string, unknown>;
+  selectedSeries: Set<string>;
+  ticks: number;
+  lineWidth: number;
+  pointWidth: number;
+  nKey: string;
+  xKey: string;
+  yKey: string;
+  dKey: string;
+}
+
+export function parseDate(dateStr: string): Date | null {
   return d3.isoParse(dateStr);
 }
 
-export function createSvg(svgElement: any, width: number, height: number, margin: any) {
+export function createSvg(
+  svgElement: SVGSVGElement,
+  width: number,
+  height: number,
+  margin: { top: number; right: number; bottom: number; left: number }
+): d3.Selection<SVGGElement, unknown, null, undefined> {
   const svg = d3
     .select(svgElement)
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
-    .append("g")
+    .append<SVGGElement>("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
   svg
@@ -23,155 +143,140 @@ export function createSvg(svgElement: any, width: number, height: number, margin
   return svg;
 }
 
-export function createScales(data: any, width: number, height: number) {
-  const allValues = data.flatMap((series: any) => series.values);
+export function addGridLines({ svg, x, y, width, height, ticks }: GridAndAxesParams): void {
+  const xAxis = d3.axisBottom(x).ticks(ticks).tickSize(-height).tickFormat(null);
+  const yAxis = d3.axisLeft(y).ticks(ticks).tickSize(-width).tickFormat(null);
 
-  const x = d3
-    .scaleTime()
-    .domain(d3.extent(allValues, (d: any) => parseDate(d.date)))
-    .range([0, width]);
-
-  const y = d3
-    .scaleLinear()
-    .domain([0, d3.max(allValues, (d: any) => d.value)])
-    .range([height, 0]);
-
-  return { x, y };
-}
-
-export function addGridLines({svg, x, y, width, height, ticks}: any) {
   svg
     .append("g")
     .attr("class", "grid x-grid")
     .attr("color", "lightgray")
     .attr("transform", `translate(0,${height})`)
-    .call(
-      d3.axisBottom(x).ticks(ticks).tickSize(-height).tickFormat("")
-    );
+    .call(xAxis as any);
 
   svg
     .append("g")
-    .attr("color", "lightgray")
     .attr("class", "grid y-grid")
-    .call(d3.axisLeft(y).ticks(ticks).tickSize(-width).tickFormat(""));
+    .attr("color", "lightgray")
+    .call(yAxis as any);
 }
 
-export function addAxes({svg, x, y, height, ticks}: any) {
-  const xAxis = svg
-    .append("g")
+export function addAxes({ svg, x, y, height, ticks }: GridAndAxesParams): void {
+  const xAxis = d3.axisBottom(x)
+    .ticks(ticks)
+    .tickFormat((d) => d3.timeFormat("%d/%m/%Y")(d as Date)); // Ensure TypeScript knows 'd' is a Date
+
+  const yAxis = d3.axisLeft(y);
+
+  const xAxisGroup = svg
+    .append<SVGGElement>("g")
     .attr("class", "axis x-axis")
     .attr("transform", `translate(0,${height})`)
-    .call(
-      d3
-        .axisBottom(x)
-        .ticks(ticks)
-        .tickFormat(d3.timeFormat("%d/%m/%Y"))
-    );
+    .call(xAxis as any); // Use 'any' to bypass the strict type check
 
-  const yAxis = svg
-    .append("g")
+  const yAxisGroup = svg
+    .append<SVGGElement>("g")
     .attr("class", "axis y-axis")
-    .call(d3.axisLeft(y));
+    .call(yAxis as any); // Use 'any' to bypass the strict type check
 
-  xAxis.selectAll("path").attr("stroke", "#4083b9");
-  xAxis.selectAll("line").attr("stroke", "#4083b9");
-  yAxis.selectAll("path").attr("stroke", "#4083b9");
-  yAxis.selectAll("line").attr("stroke", "#4083b9");
+  xAxisGroup.selectAll("path").attr("stroke", "#4083b9");
+  xAxisGroup.selectAll("line").attr("stroke", "#4083b9");
+  yAxisGroup.selectAll("path").attr("stroke", "#4083b9");
+  yAxisGroup.selectAll("line").attr("stroke", "#4083b9");
 
-  xAxis.selectAll("text").attr("fill", "#000000");
-  yAxis.selectAll("text").attr("fill", "#000000");
+  xAxisGroup.selectAll("text").attr("fill", "#000000");
+  yAxisGroup.selectAll("text").attr("fill", "#000000");
 }
 
-export function addAreas({svg, data, x, y, color, selectedSeries, seriesKey}: any, newScales?: any) {
-  if (newScales) {
-    x = newScales.x;
-    y = newScales.y;
-  }
+export function addLines(params: GraphParamsBase & { lineWidth: number }): void {
+  const { svg, data, x, y, color, selectedSeries, lineWidth, nKey, xKey, yKey, dKey, newScales } = params;
+  const xScale = newScales?.x ?? x;
+  const yScale = newScales?.y ?? y;
 
-  data.forEach((series: any, index: number) => {
-    if (selectedSeries.has(series[seriesKey])) {
-      const area = d3
-        .area()
-        .x((d: any) => x(parseDate(d.date)))
-        .y0(y(0))
-        .y1((d: any) => y(d.value));
-
-      const path = svg.select(`.area.series-${index}`);
-      if (path.empty()) {
-        svg
-          .append("path")
-          .datum(series.values)
-          .attr("class", `area series-${index}`)
-          .attr("fill", color(index))
-          .attr("opacity", 0.3)
-          .attr("d", area);
-      } else {
-        path.attr("d", area);
-      }
-    }
-  });
-}
-
-export function addLines({svg, data, x, y, color, selectedSeries, lineWidth, seriesKey}: any, newScales?: any) {
-  if (newScales) {
-    x = newScales.x;
-    y = newScales.y;
-  }
-  data.forEach((series: any, index: number) => {
-    if (selectedSeries.has(series[seriesKey])) {
+  data.forEach((series, index) => {
+    if (selectedSeries.has(series[nKey])) {
       const line = d3
-        .line()
-        .x((d: any) => x(parseDate(d.date)))
-        .y((d: any) => y(d.value));
+        .line<DataEntry>()
+        .x((d: DataEntry) => xScale(parseDate(d[xKey])!))
+        .y((d: DataEntry) => yScale(d[yKey]));
 
       const path = svg.select(`.line.series-${index}`);
       if (path.empty()) {
         svg
           .append("path")
-          .datum(series.values)
+          .datum(series[dKey])
           .attr("class", `line series-${index}`)
           .attr("fill", "none")
-          .attr("stroke", color(index))
+          .attr("stroke", color(`${index}`) as string)
           .attr("stroke-width", lineWidth || 1.5)
-          .attr("d", line);
+          .attr("d", line(series[dKey])); // Call the line generator with the data
       } else {
-        path.attr("d", line);
+        path.attr("d", line(series[dKey])); // Call the line generator with the data
       }
     }
   });
 }
 
-export function addPoints({svg, data, x, y, color, selectedSeries, pointRadius, seriesKey}: any, newScales?: any) {
-  if (newScales) {
-    x = newScales.x;
-    y = newScales.y;
-  }
+export function addAreas(params: GraphParamsBase): void {
+  const { svg, data, x, y, color, selectedSeries, nKey, xKey, yKey, dKey, newScales } = params;
+  const xScale = newScales?.x ?? x;
+  const yScale = newScales?.y ?? y;
 
-  data.forEach((series: any, index: number) => {
-    if (selectedSeries.has(series[seriesKey])) {
-      const points = svg.selectAll(`circle.series-${index}`).data(series.values);
+  data.forEach((series, index) => {
+    if (selectedSeries.has(series[nKey])) {
+      const area = d3
+        .area<DataEntry>()
+        .x((d: DataEntry) => xScale(parseDate(d[xKey])!))
+        .y0(yScale(0))
+        .y1((d: DataEntry) => yScale(d[yKey]));
 
-      points.enter()
-        .append("circle")
-        .attr("class", `point series-${index}`)
-        .attr("cx", (d: any) => x(parseDate(d.date)))
-        .attr("cy", (d: any) => y(d.value))
-        .attr("r", pointRadius || 2)
-        .attr("fill", color(index));
-
-      points
-        .attr("cx", (d: any) => x(parseDate(d.date)))
-        .attr("cy", (d: any) => y(d.value));
+      const path = svg.select(`.area.series-${index}`);
+      if (path.empty()) {
+        svg
+          .append("path")
+          .datum(series[dKey])
+          .attr("class", `area series-${index}`)
+          .attr("fill", color(`${index}`) as string)
+          .attr("opacity", 0.3)
+          .attr("d", area(series[dKey])); // Call the area generator with the data
+      } else {
+        path.attr("d", area(series[dKey])); // Call the area generator with the data
+      }
     }
   });
 }
 
-export function addLegend({svg, data, width, color, selectedSeries, toggleSeries, seriesKey}: any) {
+export function addPoints(params: GraphParamsBase & { pointRadius: number }): void {
+  const { svg, data, x, y, color, selectedSeries, pointRadius, nKey, xKey, yKey, dKey, newScales } = params;
+  const xScale = newScales?.x ?? x;
+  const yScale = newScales?.y ?? y;
+
+  data.forEach((series, index) => {
+    if (selectedSeries.has(series[nKey])) {
+      const points = svg.selectAll(`circle.series-${index}`).data(series[dKey]);
+
+      points.enter()
+        .append("circle")
+        .attr("class", `point series-${index}`)
+        .attr("cx", (d: any) => xScale(parseDate(d[xKey])!))
+        .attr("cy", (d: any) => yScale(d[yKey]))
+        .attr("r", pointRadius || 2)
+        .attr("fill", color(`${index}`) as string);
+
+      points
+        .attr("cx", (d: any) => xScale(parseDate(d[xKey])!))
+        .attr("cy", (d: any) => yScale(d[yKey]));
+    }
+  });
+}
+
+export function addLegend(params: AddLegendParams): void {
+  const { svg, data, width, color, selectedSeries, toggleSeries, nKey } = params;
   const legend = svg
     .append("g")
     .attr("transform", `translate(${width + 10}, 20)`);
 
-  data.forEach((series: any, index: number) => {
+  data.forEach((series, index) => {
     const legendRow = legend
       .append("g")
       .attr("transform", `translate(0, ${index * 20})`);
@@ -182,13 +287,13 @@ export function addLegend({svg, data, width, color, selectedSeries, toggleSeries
       .attr("height", 10)
       .attr(
         "fill",
-        selectedSeries.has(series[seriesKey]) ? color(index) : "white"
+        selectedSeries.has(series[nKey]) ? color(`${index}`) as string : "white"
       )
-      .style("stroke", color(index))
+      .style("stroke", color(`${index}`) as string)
       .style("stroke-width", 2)
       .style("cursor", "pointer")
-      .on("click", function () {
-        toggleSeries(series[seriesKey]);
+      .on("click", () => {
+        toggleSeries(series[nKey]);
       });
 
     legendRow
@@ -198,109 +303,59 @@ export function addLegend({svg, data, width, color, selectedSeries, toggleSeries
       .style("font-size", "10px")
       .attr("text-anchor", "start")
       .style("text-transform", "capitalize")
-      .text(series[seriesKey]);
+      .text(series[nKey]);
   });
 }
 
-export function addTooltip() {
-  d3.select("body")
-    .append("div")
-    .attr("class", "tooltip")
-    .style("opacity", 0);
-}
-
-export function drawToggles({svg, width, show, startGraph}: any) {
-  const toggles = svg
-    .append("g")
-    .attr("class", "toggles")
-    .attr("transform", `translate(${width + 80}, 20)`);
-
-  const toggleData = Object.keys(show);
-
-  toggles
-    .selectAll("circle")
-    .data(toggleData)
-    .enter()
-    .append("circle")
-    .attr("cx", 15)
-    .attr("cy", (d: any, i: number) => 15 + i * 20)
-    .attr("r", 5)
-    .style("fill", (d: any) => (show[d] ? "blue" : "white"))
-    .style("stroke", "black")
-    .style("stroke-width", 1)
-    .on("click", function (event: any, d: any) {
-      show[d] = !show[d];
-      startGraph();
-    });
-
-  toggles
-    .selectAll("text")
-    .data(toggleData)
-    .enter()
-    .append("text")
-    .attr("x", 30)
-    .attr("y", (d: any, i: number) => 20 + i * 20)
-    .style("font-size", "10px")
-    .attr("alignment-baseline", "middle")
-    .text((d: any) => d);
-}
-
-export function initializeShow({defaultFeatures}) {
-  const features = [
-    'grid',
-    'axis',
-    'areas',
-    'lines',
-    'points',
-    'heat'
-  ];
-
+export function initializeShow({ defaultFeatures }: InitializeShowParams): { [key: string]: boolean } {
+  const features = ['grid', 'axis', 'areas', 'lines', 'points', 'heat'];
   const show: { [key: string]: boolean } = {};
 
   features.forEach(feature => {
-    show[feature] = defaultFeatures.length > 0
-      ? defaultFeatures.includes(feature)
-      : show.includes(feature);
+    show[feature] = defaultFeatures.includes(feature);
   });
 
   return show;
 }
 
-export function useScales(data: any, width: number, height: number) {
-  const allValues = data.flatMap((series: any) => series.values);
+export function useScales(params: UseScalesParams): { x: d3.ScaleTime<number, number>; y: d3.ScaleLinear<number, number> } {
+  const { data, width, height, xKey, yKey, dKey } = params;
+  const allValues = data.flatMap(series => series[dKey]);
 
   const x = d3
     .scaleTime()
-    .domain(d3.extent(allValues, (d: any) => parseDate(d.date)))
+    .domain(d3.extent(allValues, (d: any) => parseDate(d[xKey])!) as [Date, Date])
     .range([0, width]);
 
   const y = d3
     .scaleLinear()
-    .domain([0, d3.max(allValues, (d: any) => d.value)])
+    .domain([0, d3.max(allValues, (d: any) => d[yKey])!])
     .range([height, 0]);
 
   return { x, y };
 }
 
-export function useColors({colors, series}) {
-  const color = d3.scaleOrdinal(colors);
-  let seriesColorMap = new Map();
-  series.forEach((s: any, i: number) => {
-    seriesColorMap.set(s, color(i));
-  });
-  return { color, seriesColorMap };
+
+export function useColors(params: UseColorsParams): { color: d3.ScaleOrdinal<string, unknown> } {
+  const { colors, series } = params;
+  const color = d3.scaleOrdinal<string, unknown>(colors);
+  color.domain(series); // Ensure the color scale has the correct domain
+  return { color };
 }
 
-export function useZoom({svgElement, x, y, width, height, show, data, color, selectedSeries, ticks, lineWidth, pointWidth, seriesKey}) {
-  const zoom = d3.zoom()
+
+export function useZoom(params: UseZoomParams): void {
+  const { svgElement, x, y, width, height, show, data, color, selectedSeries, ticks, lineWidth, pointWidth, nKey, xKey, yKey, dKey } = params;
+
+  const zoom: d3.ZoomBehavior<SVGSVGElement, unknown> = d3.zoom<SVGSVGElement, unknown>()
     .scaleExtent([1, 8])
     .extent([[0, 0], [width, height]])
-    .translateExtent([[0, 0], [width, height]]) // Restrict panning
+    .translateExtent([[0, 0], [width, height]])
     .on("zoom", zoomed);
 
-  d3.select(svgElement).call(zoom);
+  d3.select<SVGSVGElement, unknown>(svgElement).call(zoom);
 
-  function zoomed(event) {
+  function zoomed(event: any): void {
     const transform = event.transform;
     const newX = transform.rescaleX(x);
     const newY = transform.rescaleY(y);
@@ -308,13 +363,13 @@ export function useZoom({svgElement, x, y, width, height, show, data, color, sel
     constrainDomain(newX, x);
     constrainDomain(newY, y);
 
-    if (show.grid) updateGrid(newX, newY);
-    if (show.axis) updateAxes(newX, newY);
+    if (show['grid']) updateGrid(newX, newY);
+    if (show['axis']) updateAxes(newX, newY);
     const newScales = { x: newX, y: newY };
     updateGraphElements(newScales);
   }
 
-  function constrainDomain(newScale, originalScale) {
+  function constrainDomain(newScale: any, originalScale: any): void {
     const [newMin, newMax] = newScale.domain();
     const [originalMin, originalMax] = originalScale.domain();
 
@@ -326,36 +381,35 @@ export function useZoom({svgElement, x, y, width, height, show, data, color, sel
     }
   }
 
-  function updateGrid(newX, newY) {
+  function updateGrid(newX: any, newY: any): void {
     d3.select(svgElement).select(".x-grid")
-      .call(d3.axisBottom(newX).ticks(ticks).tickSize(-height).tickFormat(""));
+      .call(d3.axisBottom(newX).ticks(ticks).tickSize(-height).tickFormat(null) as any);
     d3.select(svgElement).select(".y-grid")
-      .call(d3.axisLeft(newY).ticks(ticks).tickSize(-width).tickFormat(""));
+      .call(d3.axisLeft(newY).ticks(ticks).tickSize(-width).tickFormat(null) as any);
   }
 
-  function updateAxes(newX, newY) {
+  function updateAxes(newX: any, newY: any): void {
     d3.select(svgElement).select(".x-axis")
-      .call(d3.axisBottom(newX).ticks(ticks).tickFormat(d3.timeFormat("%d/%m/%Y")));
+      .call(d3.axisBottom(newX).ticks(ticks).tickFormat((d) => d3.timeFormat("%d/%m/%Y")(d as Date)) as any); // Ensure TypeScript knows 'd' is a Date
     d3.select(svgElement).select(".y-axis")
-      .call(d3.axisLeft(newY).ticks(ticks));
+      .call(d3.axisLeft(newY).ticks(ticks) as any); // Use 'any' to bypass the strict type check
   }
 
-  function updateGraphElements(newScales) {
-    const graphGroup = d3.select(svgElement).select("g");
+  function updateGraphElements(newScales: { x: d3.ScaleTime<number, number>; y: d3.ScaleLinear<number, number> }): void {
+    const graphGroup = d3.select(svgElement).select<SVGGElement>("g");
 
-    if (show.areas) addAreas({svg: graphGroup, data, x, y, color, selectedSeries, seriesKey}, newScales);
-    if (show.lines) addLines({svg: graphGroup, data, x, y, color, selectedSeries, lineWidth, seriesKey}, newScales);
-    if (show.points) addPoints({svg: graphGroup, data, x, y, color, selectedSeries, pointRadius: pointWidth, seriesKey}, newScales);
+    if (show['areas']) addAreas({ svg: graphGroup, data, x, y, color, selectedSeries, nKey, xKey, yKey, dKey, newScales });
+    if (show['lines']) addLines({ svg: graphGroup, data, x, y, color, selectedSeries, lineWidth, nKey, xKey, yKey, dKey, newScales });
+    if (show['points']) addPoints({ svg: graphGroup, data, x, y, color, selectedSeries, pointRadius: pointWidth, nKey, xKey, yKey, dKey, newScales });
   }
 }
 
-export function initializeXYElements(
-  {svg, graphGroup, data, x, y, color, selectedSeries, show, width, height, lineWidth, pointWidth, seriesKey, config}: any
-) {
+export function initializeXYElements(params: InitializeXYElementsParams): void {
+  const { svg, graphGroup, data, x, y, color, selectedSeries, show, width, height, lineWidth, pointWidth, nKey, xKey, yKey, dKey, ticks } = params;
 
-  if (show.grid) addGridLines({svg, x, y, width, height});
-  if (show.axis) addAxes({svg, x, y, height});
-  if (show.areas) addAreas({svg: graphGroup, data, x, y, color, selectedSeries, seriesKey});
-  if (show.lines) addLines({svg: graphGroup, data, x, y, color, selectedSeries, lineWidth, seriesKey});
-  if (show.points) addPoints({svg: graphGroup, data, x, y, color, selectedSeries, pointRadius: pointWidth, seriesKey});
+  if (show['grid']) addGridLines({ svg, x, y, width, height, ticks });
+  if (show['axis']) addAxes({ svg, x, y, height, ticks, width });
+  if (show['areas']) addAreas({ svg: graphGroup, data, x, y, color, selectedSeries, nKey, xKey, yKey, dKey });
+  if (show['lines']) addLines({ svg: graphGroup, data, x, y, color, selectedSeries, lineWidth, nKey, xKey, yKey, dKey });
+  if (show['points']) addPoints({ svg: graphGroup, data, x, y, color, selectedSeries, pointRadius: pointWidth, nKey, xKey, yKey, dKey });
 }

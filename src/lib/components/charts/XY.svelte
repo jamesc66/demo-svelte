@@ -7,25 +7,26 @@
     useColors,
     useZoom,
     initializeXYElements,
+    type XYConfig,
   } from "./xy";
   import * as d3 from "d3";
   import Legend from "./Legend.svelte";
   import Toggles from "./Toggles.svelte";
 
-  let svgElement;
+  let svgElement: SVGSVGElement;
   export let data: any[] = [];
-  export let config: any = {};
+  export let config: XYConfig;
 
-  let series = Array.from(new Set(data.map((d) => d[config.seriesKey])));
+  let series = Array.from(new Set(data.map((d) => d[config.nKey])));
   let show = initializeShow({ defaultFeatures: config.defaultFeatures });
-  let selectedSeries = new Set(data.map((d) => d.location));
+  let selectedSeries = new Set(data.map((d) => d[config.nKey]));
 
-  const { color, seriesColorMap } = useColors({
+  const { color } = useColors({
     colors: config.colors,
     series,
   });
 
-  function startGraph() {
+  function startGraph(): void {
     const margin = config.margin;
     const width = config.width - margin.left - margin.right;
     const height = config.height - margin.top - margin.bottom;
@@ -33,7 +34,14 @@
     d3.select(svgElement).selectAll("*").remove();
 
     const svg = createSvg(svgElement, width, height, margin);
-    const { x, y } = useScales(data, width, height);
+    const { x, y } = useScales({
+      data,
+      width,
+      height,
+      xKey: config.xKey,
+      yKey: config.yKey,
+      dKey: config.dKey,
+    });
     const graphGroup = svg.append("g").attr("clip-path", "url(#clip)");
 
     useZoom({
@@ -42,7 +50,6 @@
       y,
       width,
       height,
-      config,
       show,
       data,
       color,
@@ -50,7 +57,10 @@
       ticks: config.ticks,
       lineWidth: config.lineWidth,
       pointWidth: config.pointWidth,
-      seriesKey: config.seriesKey,
+      nKey: config.nKey,
+      xKey: config.xKey,
+      yKey: config.yKey,
+      dKey: config.dKey,
     });
 
     initializeXYElements({
@@ -59,7 +69,6 @@
       data,
       x,
       y,
-      config,
       color,
       selectedSeries,
       show,
@@ -68,26 +77,28 @@
       ticks: config.ticks,
       lineWidth: config.lineWidth,
       pointWidth: config.pointWidth,
-      seriesKey: config.seriesKey,
-      config,
+      nKey: config.nKey,
+      xKey: config.xKey,
+      yKey: config.yKey,
+      dKey: config.dKey,
     });
   }
 
-  function toggleShow(option: string) {
+  function toggleShow(option: string): void {
     show[option] = !show[option];
     startGraph();
   }
 
-  function toggleSeries(seriesKey: string) {
-    if (selectedSeries.has(seriesKey)) {
-      selectedSeries.delete(seriesKey);
+  function toggleSeries(nKey: string): void {
+    if (selectedSeries.has(nKey)) {
+      selectedSeries.delete(nKey);
     } else {
-      selectedSeries.add(seriesKey);
+      selectedSeries.add(nKey);
     }
     startGraph();
   }
 
-  onMount(() => {
+  onMount((): void => {
     startGraph();
   });
 
@@ -99,7 +110,7 @@
 <div class="container">
   <svg bind:this={svgElement}></svg>
   <div class="controls">
-    <Legend {series} {selectedSeries} {seriesColorMap} {toggleSeries} />
+    <Legend {series} {selectedSeries} {color} {toggleSeries} />
     <Toggles {show} {toggleShow} />
   </div>
 </div>
