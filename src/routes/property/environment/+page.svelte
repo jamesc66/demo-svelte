@@ -52,7 +52,7 @@
   });
 
   const radarConfig = {
-    variant: "split-radar",
+    variant: "radar",
     nKey: "room",
     xKey: "insight",
     yKey: "value",

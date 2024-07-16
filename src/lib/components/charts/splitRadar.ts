@@ -314,13 +314,101 @@ export function addTooltip() {
     .style("opacity", 0);
 }
 
-export function drawToggles() {
-  // Placeholder for drawToggles function
+
+// New functions for toggles
+export function addToggles(
+  svg: d3.Selection<SVGGElement, unknown, null, undefined>,
+  show: { [key: string]: boolean },
+  toggleShow: (option: string) => void
+): void {
+  const toggleContainer = svg
+    .append('g')
+    .attr('class', 'toggles')
+    .attr('transform', 'translate(0, 0)');
+
+  Object.keys(show).forEach((option, index) => {
+    const toggleItem = toggleContainer
+      .append('g')
+      .attr('class', 'toggle-item')
+      .attr('transform', `translate(0, ${index * 25})`); // Adjusted spacing for uniform size
+
+    toggleItem
+      .append('rect')
+      .attr('width', 16) // Standardized size
+      .attr('height', 16) // Standardized size
+      .attr('fill', show[option] ? '#7597c9' : 'white')
+      .attr('stroke', '#7597c9')
+      .attr('stroke-width', 2)
+      .style('cursor', 'pointer')
+      .on('click', () => {
+        toggleShow(option);
+      });
+
+    toggleItem
+      .append('text')
+      .attr('x', 22) // Standardized spacing
+      .attr('y', 12) // Adjusted for alignment
+      .style('font-size', '14px') // Standardized font size
+      .style('fill', '#333')
+      .text(option)
+      .style('cursor', 'pointer')
+      .on('click', () => {
+        toggleShow(option);
+      });
+  });
 }
 
-export function drawLegend() {
-  // Placeholder for drawLegend function
+
+export function addLegend(params: any): void {
+  const { svg, data } = params;
+  const legend = svg.append('g').attr('transform', 'translate(0, 0)');
+
+  data.forEach((series, index) => {
+    legendItem(legend, series, index, params);
+  });
 }
+
+export function legendItem(
+  legend: any,
+  series: any,
+  index: number,
+  params: any
+): void {
+  const { color, selectedSeries, toggleSeries, nKey } = params;
+  const legendRow = legend
+    .append('g')
+    .attr('transform', `translate(0, ${index * 25})`); // Adjusted spacing for uniform size
+
+  legendRow
+    .append('circle') // Changed from 'rect' to 'circle'
+    .attr('cx', 8) // Center x of the circle
+    .attr('cy', 8) // Center y of the circle
+    .attr('r', 5) // Reduced radius for smaller circles
+    .attr(
+      'fill',
+      selectedSeries.has(series[nKey]) ? color(series[nKey]) : 'white'
+    )
+    .style('stroke', color(series[nKey]))
+    .style('stroke-width', 2)
+    .style('cursor', 'pointer')
+    .on('click', () => {
+      toggleSeries(series[nKey]);
+    });
+
+  legendRow
+    .append('text')
+    .attr('x', 22) // Standardized spacing
+    .attr('y', 12) // Adjusted for alignment
+    .style('font-size', '14px') // Standardized font size
+    .attr('text-anchor', 'start')
+    .style('text-transform', 'capitalize')
+    .text(series[nKey])
+    .on('click', () => {
+      toggleSeries(series[nKey]);
+    });
+}
+
+
 
 export function addAnnotations(svg: any, radius: number) {
   // Adding horizontal line with labels
@@ -499,9 +587,9 @@ export function initializeRadarElements(
   if (show.shadedSegments) shadeSegments(svg, rScale, angleSlice, config, shadedSegments);
   if (show.grid) drawGrid(svg, radius);
   if (show.axis) drawAxis(svg, filteredData, rScale, angleSlice, config);
-  if (show.legend) drawLegend();
+  // if (show.legend) addLegend();
   if (show.tooltip) addTooltip();
-  if (config.togle) drawToggles();
+  // if (config.togle) addToggles();
   if (show.heat) drawHeatPoint(svg, allData, rScale, angleSlice, config, color, selectedSeries);
   if (show.points) drawRadarPoints(svg, filteredData, rScale, angleSlice, initialLoad, seriesColorMap, show, config);
   if (show.annotations) addAnnotations(svg, radius);

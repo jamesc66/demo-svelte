@@ -1,42 +1,41 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import * as d3 from "d3";
+  import TimelineVanilla from "./TimelineVanilla.svelte";
+  import Timeline from "./Timeline.svelte";
   import {
+    initializeSeriesColors,
     initializeSVG,
     calculateAngleSlice,
     initializeScale,
-    drawGrid,
-    drawAxis,
-    drawRadarAreas,
-    drawRadarLines,
-    drawHeatPoint,
-    drawRadarPoints,
-    initializeSeriesColors,
-  } from "./components";
+    initializeShow,
+    initializeRadarElements,
+    addLegend,
+    addToggles,
+  } from "./splitRadar";
 
   export let config;
   export let data: any[] = [{ room: "", insight: "", value: 0 }];
   export let allData: any[] = [];
 
-  let show = {
-    grid: config.show.includes("grid"),
-    axis: config.show.includes("axis"),
-    areas: config.show.includes("areas"),
-    lines: config.show.includes("lines"),
-    points: config.show.includes("points"),
-    legend: config.show.includes("legend"),
-    tooltip: config.show.includes("tooltip"),
-    heat: config.show.includes("heat"),
-  };
+  let show = initializeShow(config);
 
   let nestedData;
-  let color = d3.scaleOrdinal(d3.schemeCategory10);
+  let color = d3.scaleOrdinal(config.colors);
   let selectedSeries = new Set(data.map((d) => d[config.seriesKey]));
   let seriesColorMap = new Map();
 
+  // Define the series variable
+  let series = Array.from(new Set(data.map((d) => d[config.seriesKey])));
+
   onMount(() => {
     nestedData = d3.group(data, (d) => d[config.nKey]);
-    initializeSeriesColors(data, config.seriesKey, seriesColorMap);
+    initializeSeriesColors(
+      data,
+      config.seriesKey,
+      seriesColorMap,
+      config.colors
+    );
 
     drawChart(
       nestedData,
@@ -51,6 +50,7 @@
 
   $: {
     nestedData = d3.group(data, (d) => d[config.nKey]);
+    series = Array.from(new Set(data.map((d) => d[config.seriesKey])));
     drawChart(
       nestedData,
       false,
@@ -71,9 +71,9 @@
     config,
     allData
   ) {
-    const margin = { top: 50, right: 150, bottom: 50, left: 80 };
-    const width = 600 - margin.left - margin.right;
-    const height = 600 - margin.top - margin.bottom;
+    const margin = config.margin;
+    const width = config.width - margin.left - margin.right;
+    const height = config.height - margin.top - margin.bottom;
     const radius = Math.min(width, height) / 2;
 
     const svg = initializeSVG(margin, width, height);
@@ -84,160 +84,113 @@
       .filter(([key, values]) => selectedSeries.has(key))
       .reduce((acc, [key, values]) => acc.set(key, values), new Map());
 
-    if (show.grid) drawGrid(svg, radius);
-    if (show.axis) drawAxis(svg, filteredData, rScale, angleSlice, config);
-    if (show.areas)
-      drawRadarAreas(
-        svg,
-        filteredData,
-        rScale,
-        angleSlice,
-        initialLoad,
-        seriesColorMap,
-        config
-      );
-    if (show.lines)
-      drawRadarLines(
-        svg,
-        filteredData,
-        rScale,
-        angleSlice,
-        initialLoad,
-        seriesColorMap,
-        config
-      );
-    if (show.heat)
-      drawHeatPoint(
-        svg,
-        allData,
-        rScale,
-        angleSlice,
-        config,
-        color,
-        selectedSeries
-      );
-    if (show.points)
-      drawRadarPoints(
-        svg,
-        filteredData,
-        rScale,
-        angleSlice,
-        initialLoad,
-        seriesColorMap,
-        show,
-        config
-      );
-    if (show.legend)
-      drawLegend(
-        svg,
-        data,
-        width,
-        height,
-        seriesColorMap,
-        selectedSeries,
-        config
-      );
-    if (show.tooltip) addTooltip();
-    if (config.togle) drawToggles(svg, data, width, height, config);
-  }
-  export function drawLegend(
-    svg,
-    data,
-    width,
-    height,
-    seriesColorMap,
-    selectedSeries,
-    config
-  ) {
-    const legend = svg
-      .append("g")
-      .attr("class", "legend")
-      .attr("transform", `translate(${width / 2 + 20}, ${-height / 2})`);
+    const shadedSegments = [
+      {
+        startAxis: 2.5,
+        endAxis: 3.5,
+        color: "white",
+        opacity: 1,
+      },
+      {
+        startAxis: 5.5,
+        endAxis: 6.5,
+        color: "white",
+        opacity: 1,
+      },
+    ];
 
-    legend
-      .selectAll("rect")
-      .data(Array.from(data.keys()))
-      .enter()
-      .append("rect")
-      .attr("x", 10)
-      .attr("y", (d, i) => 10 + i * 20)
-      .attr("width", 10)
-      .attr("height", 10)
-      .style("fill", (d) =>
-        selectedSeries.has(d) ? seriesColorMap.get(d) : "white"
-      )
-      .style("stroke", "black")
-      .on("click", function (event, d) {
-        if (selectedSeries.has(d)) {
-          selectedSeries.delete(d);
-        } else {
-          selectedSeries.add(d);
-        }
-        drawChart(
-          nestedData,
-          false,
-          show,
-          selectedSeries,
-          seriesColorMap,
-          config,
-          allData
-        ); // Redraw the chart with the updated room selection
-      });
+    initializeRadarElements(
+      svg,
+      filteredData,
+      rScale,
+      angleSlice,
+      initialLoad,
+      seriesColorMap,
+      config,
+      show,
+      allData,
+      shadedSegments,
+      radius
+    );
 
-    legend
-      .selectAll("text")
-      .data(Array.from(data.keys()))
-      .enter()
-      .append("text")
-      .attr("x", 30)
-      .attr("y", (d, i) => 20 + i * 20)
-      .style("font-size", "10px")
-      .attr("alignment-baseline", "middle")
-      .text((d) => d);
+    // Add the custom legend and toggles
+    const legendContainer = d3.select("#legend");
+    legendContainer.selectAll("*").remove(); // Clear previous legend elements
+
+    const legendSvg = legendContainer
+      .append("svg")
+      .attr("width", 200)
+      .attr("height", series.length * 25 + Object.keys(show).length * 25);
+
+    addLegend({
+      svg: legendSvg.append("g").attr("class", "legend"),
+      data: series.map((key) => ({
+        [config.nKey]: key,
+      })),
+      width: 180,
+      color: (key) => seriesColorMap.get(key) || "black",
+      selectedSeries,
+      toggleSeries,
+      nKey: config.nKey,
+    });
+
+    addToggles(
+      legendSvg
+        .append("g")
+        .attr("class", "toggles")
+        .attr("transform", `translate(0, ${series.length * 25})`),
+      show,
+      toggleShow
+    );
   }
 
-  export function addTooltip() {
-    d3.select("body")
-      .append("div")
-      .attr("class", "tooltip")
-      .style("opacity", 0);
+  function toggleSeries(d: any) {
+    if (selectedSeries.has(d)) {
+      selectedSeries.delete(d);
+    } else {
+      selectedSeries.add(d);
+    }
+    drawChart(
+      nestedData,
+      false,
+      show,
+      selectedSeries,
+      seriesColorMap,
+      config,
+      allData
+    );
   }
 
-  function drawToggles(svg, data, width, height, config) {
-    const toggles = svg
-      .append("g")
-      .attr("class", "toggles")
-      .attr("transform", `translate(${width / 2 + 20 + 80}, ${-height / 2})`);
-
-    const toggleData = Object.keys(show);
-
-    toggles
-      .selectAll("circle")
-      .data(toggleData)
-      .enter()
-      .append("circle")
-      .attr("cx", 15) // x coordinate for the center of the circle
-      .attr("cy", (d, i) => 15 + i * 20) // y coordinate for the center of the circle
-      .attr("r", 5) // radius of the circle
-      .style("fill", (d) => (show[d] ? "blue" : "white")) // fill color of the circle based on show status
-      .style("stroke", "black") // outline color of the circle
-      .style("stroke-width", 1) // width of the outline
-      .on("click", function (event, d) {
-        show[d] = !show[d];
-        drawChart(nestedData); // Redraw the chart with the updated show status
-      });
-
-    toggles
-      .selectAll("text")
-      .data(toggleData)
-      .enter()
-      .append("text")
-      .attr("x", 30)
-      .attr("y", (d, i) => 20 + i * 20)
-      .style("font-size", "10px")
-      .attr("alignment-baseline", "middle")
-      .text((d) => d);
+  function toggleShow(option: string) {
+    show[option] = !show[option];
+    drawChart(
+      nestedData,
+      false,
+      show,
+      selectedSeries,
+      seriesColorMap,
+      config,
+      allData
+    );
   }
 </script>
 
-<div id="radarChart"></div>
+<div class="container">
+  <div id="radarChart"></div>
+  <div id="legend" class="controls"></div>
+</div>
+
+<style>
+  .container {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  #radarChart {
+    flex-grow: 1;
+  }
+
+  .controls {
+    width: 200px;
+  }
+</style>
