@@ -12,6 +12,7 @@
     initializeShow,
     initializeRadarElements,
   } from "./splitRadar";
+  import Timeline from "./Timeline.svelte";
 
   export let config;
   export let data: any[] = [{ room: "", insight: "", value: 0 }];
@@ -147,7 +148,8 @@
 <div class="container">
   <div>
     <div id="radarChart"></div>
-    <TimelineVanilla data={allData} on:dateSelected />
+    <Timeline data={allData} on:dateSelected />
+    <!-- <TimelineVanilla data={allData} on:dateSelected /> -->
   </div>
 
   <div class="controls">
