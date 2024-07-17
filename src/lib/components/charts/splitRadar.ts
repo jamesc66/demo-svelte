@@ -1,20 +1,162 @@
-// splitRadar.ts
-
 import * as d3 from "d3";
+
+interface InitializeSeriesColorsParams {
+  data: any[];
+  seriesKey: string;
+  seriesColorMap: Map<string, string>;
+  customColorScale: string[];
+}
+
+interface DrawHeatPointParams {
+  svg: d3.Selection<SVGGElement, unknown, null, undefined>;
+  data: Map<any, any[]>;
+  rScale: d3.ScaleLinear<number, number>;
+  angleSlice: number;
+  config: any;
+  color: (key: string) => string;
+  selectedSeries: Set<string>;
+}
+
+interface InitializeSVGParams {
+  margin: { top: number; right: number; bottom: number; left: number };
+  width: number;
+  height: number;
+}
+
+interface CalculateAngleSliceParams {
+  data: Map<any, any[]>;
+}
+
+interface InitializeScaleParams {
+  radius: number;
+}
+
+interface DrawGridParams {
+  svg: d3.Selection<SVGGElement, unknown, null, undefined>;
+  radius: number;
+}
+
+interface DrawAxisParams {
+  svg: d3.Selection<SVGGElement, unknown, null, undefined>;
+  data: Map<any, any[]>;
+  rScale: d3.ScaleLinear<number, number>;
+  angleSlice: number;
+  config: any;
+}
+
+interface DrawRadarAreasParams {
+  svg: d3.Selection<SVGGElement, unknown, null, undefined>;
+  data: Map<any, any[]>;
+  rScale: d3.ScaleLinear<number, number>;
+  angleSlice: number;
+  initialLoad: boolean;
+  seriesColorMap: Map<string, string>;
+  config: any;
+}
+
+interface DrawRadarLinesParams {
+  svg: d3.Selection<SVGGElement, unknown, null, undefined>;
+  data: Map<any, any[]>;
+  rScale: d3.ScaleLinear<number, number>;
+  angleSlice: number;
+  initialLoad: boolean;
+  seriesColorMap: Map<string, string>;
+  config: any;
+}
+
+interface DrawRadarPointsParams {
+  svg: d3.Selection<SVGGElement, unknown, null, undefined>;
+  data: Map<any, any[]>;
+  rScale: d3.ScaleLinear<number, number>;
+  angleSlice: number;
+  initialLoad: boolean;
+  seriesColorMap: Map<string, string>;
+  show: { [key: string]: boolean };
+  config: any;
+}
+
+interface ShadeSegmentParams {
+  svg: d3.Selection<SVGGElement, unknown, null, undefined>;
+  rScale: d3.ScaleLinear<number, number>;
+  angleSlice: number;
+  shadedSegment: any;
+}
+
+interface ShadeSegmentsParams {
+  svg: d3.Selection<SVGGElement, unknown, null, undefined>;
+  rScale: d3.ScaleLinear<number, number>;
+  angleSlice: number;
+  shadedSegments: any[];
+}
+
+interface AddTogglesParams {
+  svg: d3.Selection<SVGGElement, unknown, null, undefined>;
+  show: { [key: string]: boolean };
+  toggleShow: (option: string) => void;
+}
+
+interface ToggleItemParams {
+  toggleContainer: d3.Selection<SVGGElement, unknown, null, undefined>;
+  option: string;
+  index: number;
+  show: { [key: string]: boolean };
+  toggleShow: (option: string) => void;
+}
+
+interface AddLegendParams {
+  svg: d3.Selection<SVGGElement, unknown, null, undefined>;
+  data: any[];
+  width: number;
+  color: (key: string) => string;
+  selectedSeries: Set<string>;
+  toggleSeries: (key: string) => void;
+  nKey: string;
+}
+
+interface LegendItemParams {
+  legend: d3.Selection<SVGGElement, unknown, null, undefined>;
+  series: any;
+  index: number;
+  color: (key: string) => string;
+  selectedSeries: Set<string>;
+  toggleSeries: (key: string) => void;
+  nKey: string;
+}
+
+interface AddAnnotationsParams {
+  svg: d3.Selection<SVGGElement, unknown, null, undefined>;
+  radius: number;
+}
+
+interface InitializeShowParams {
+  config: any;
+}
+
+interface InitializeRadarElementsParams {
+  svg: d3.Selection<SVGGElement, unknown, null, undefined>;
+  filteredData: Map<any, any[]>;
+  rScale: d3.ScaleLinear<number, number>;
+  angleSlice: number;
+  initialLoad: boolean;
+  seriesColorMap: Map<string, string>;
+  config: any;
+  show: { [key: string]: boolean };
+  allData: Map<any, any[]>;
+  shadedSegments: any[];
+  radius: number;
+}
+
+// Update the rest of the functions similarly to ensure consistent type usage...
+
 
 export function initializeSeriesColors({
   data,
   seriesKey,
   seriesColorMap,
   customColorScale,
-}: {
-  data: any;
-  seriesKey: string;
-  seriesColorMap: any;
-  customColorScale: any;
-}) {
+}: InitializeSeriesColorsParams): void {
   let seriesKeys = new Set(data.map((d: any) => d[seriesKey]));
-  let colorScale = d3.scaleOrdinal(customColorScale).domain(seriesKeys);
+  let colorScale = d3.scaleOrdinal(customColorScale).domain(Array.from(seriesKeys));
   seriesKeys.forEach((key) => {
     seriesColorMap.set(key, colorScale(key));
   });
@@ -28,28 +170,16 @@ export function drawHeatPoint({
   config,
   color,
   selectedSeries,
-}: {
-  svg: any;
-  data: any;
-  rScale: any;
-  angleSlice: any;
-  config: any;
-  color: any;
-  selectedSeries: any;
-}) {
+}: DrawHeatPointParams): void {
   data.forEach((values: any, key: any) => {
     const newValues = values[config.dataKey].filter((d: any) =>
       selectedSeries.has(d[config.seriesKey])
     );
-    const keyPercentage = (key / data.length) * 100;
+    const keyPercentage = (key / data.size) * 100;
     const opacityRange = [0.1, 0.3];
     const radiusRange = [20, 3];
-    const radius =
-      radiusRange[0] +
-      ((radiusRange[1] - radiusRange[0]) * keyPercentage) / 100;
-    const opacity =
-      opacityRange[0] +
-      ((opacityRange[1] - opacityRange[0]) * keyPercentage) / 100;
+    const radius = radiusRange[0] + ((radiusRange[1] - radiusRange[0]) * keyPercentage) / 100;
+    const opacity = opacityRange[0] + ((opacityRange[1] - opacityRange[0]) * keyPercentage) / 100;
 
     svg
       .append("g")
@@ -77,47 +207,38 @@ export function initializeSVG({
   margin,
   width,
   height,
-}: {
-  margin: any;
-  width: number;
-  height: number;
-}) {
-  d3.select("#radarChart").selectAll("*").remove();
+}: InitializeSVGParams): d3.Selection<SVGGElement, unknown, HTMLElement, any> {
+  d3.select<HTMLElement, any>("#radarChart").selectAll("*").remove();
   return d3
-    .select("#radarChart")
-    .append("svg")
+    .select<HTMLElement, any>("#radarChart")
+    .append<SVGSVGElement>("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
-    .append("g")
+    .append<SVGGElement>("g")
     .attr(
       "transform",
       `translate(${width / 2 + margin.left},${height / 2 + margin.top})`
     );
 }
 
+
+
 export function calculateAngleSlice({
   data,
-}: {
-  data: any;
-}) {
+}: CalculateAngleSliceParams): number {
   return (Math.PI * 2) / Array.from(data.values())[0].length;
 }
 
 export function initializeScale({
   radius,
-}: {
-  radius: number;
-}) {
+}: InitializeScaleParams): d3.ScaleLinear<number, number> {
   return d3.scaleLinear().range([0, radius]).domain([0, 10]);
 }
 
 export function drawGrid({
   svg,
   radius,
-}: {
-  svg: any;
-  radius: number;
-}) {
+}: DrawGridParams): void {
   const axisGrid = svg.append("g").attr("class", "axisWrapper");
 
   axisGrid
@@ -139,13 +260,7 @@ export function drawAxis({
   rScale,
   angleSlice,
   config,
-}: {
-  svg: any;
-  data: any;
-  rScale: any;
-  angleSlice: any;
-  config: any;
-}) {
+}: DrawAxisParams): void {
   svg
     .selectAll(".axis")
     .data(Array.from(data.values())[0])
@@ -199,15 +314,7 @@ export function drawRadarAreas({
   initialLoad,
   seriesColorMap,
   config,
-}: {
-  svg: any;
-  data: any;
-  rScale: any;
-  angleSlice: any;
-  initialLoad: boolean;
-  seriesColorMap: any;
-  config: any;
-}) {
+}: DrawRadarAreasParams): void {
   const radarArea = d3
     .areaRadial()
     .angle((d: any, i: number) => i * angleSlice)
@@ -220,7 +327,7 @@ export function drawRadarAreas({
       .append("path")
       .datum(values)
       .attr("d", radarArea)
-      .style("fill", seriesColorMap.get(key))
+      .style("fill", seriesColorMap.get(key) as string)
       .style("fill-opacity", 0.1);
 
     if (initialLoad) {
@@ -243,15 +350,7 @@ export function drawRadarLines({
   initialLoad,
   seriesColorMap,
   config,
-}: {
-  svg: any;
-  data: any;
-  rScale: any;
-  angleSlice: any;
-  initialLoad: boolean;
-  seriesColorMap: any;
-  config: any;
-}) {
+}: DrawRadarLinesParams): void {
   const radarLine = d3
     .lineRadial()
     .radius((d: any) => rScale(d[config.yKey]))
@@ -264,7 +363,7 @@ export function drawRadarLines({
       .datum(values)
       .attr("d", radarLine)
       .style("fill", "none")
-      .style("stroke", seriesColorMap.get(key))
+      .style("stroke", seriesColorMap.get(key) as string)
       .style("stroke-width", 1);
 
     if (initialLoad) {
@@ -288,16 +387,7 @@ export function drawRadarPoints({
   seriesColorMap,
   show,
   config,
-}: {
-  svg: any;
-  data: any;
-  rScale: any;
-  angleSlice: any;
-  initialLoad: boolean;
-  seriesColorMap: any;
-  show: any;
-  config: any;
-}) {
+}: DrawRadarPointsParams): void {
   data.forEach((values: any, key: any) => {
     const points = svg.append("g").selectAll(".dot").data(values).enter();
 
@@ -314,7 +404,7 @@ export function drawRadarPoints({
           rScale(d[config.yKey]) * Math.sin(angleSlice * j - Math.PI / 2)
       )
       .attr("r", 3)
-      .style("fill", seriesColorMap.get(key))
+      .style("fill", seriesColorMap.get(key) as string)
       .style("stroke", "none");
 
     points
@@ -331,7 +421,7 @@ export function drawRadarPoints({
       )
       .attr("r", 2)
       .style("fill", "#fff")
-      .style("stroke", seriesColorMap.get(key))
+      .style("stroke", seriesColorMap.get(key) as string)
       .style("stroke-width", 1)
       .on("mouseover", function (event: any, d: any) {
         if (show.tooltip) {
@@ -393,19 +483,13 @@ export function drawRadarPoints({
       });
   });
 }
-// Updated functions with safety checks and better error handling
 
 export function shadeSegment({
   svg,
   rScale,
   angleSlice,
   shadedSegment,
-}: {
-  svg: any;
-  rScale: any;
-  angleSlice: any;
-  shadedSegment: any;
-}) {
+}: ShadeSegmentParams): void {
   if (!shadedSegment) {
     console.error("shadedSegment is undefined");
     return;
@@ -416,17 +500,17 @@ export function shadeSegment({
   const startAngle = angleSlice * startAxis - Math.PI / 2;
   const endAngle = angleSlice * endAxis - Math.PI / 2;
 
-  const segmentData = [
-    { angle: startAngle, radius: 0 },
-    { angle: startAngle, radius: rScale(10) },
-    { angle: endAngle, radius: rScale(10) },
-    { angle: endAngle, radius: 0 },
+  const segmentData: [number, number][] = [
+    [startAngle, 0],
+    [startAngle, rScale(10)],
+    [endAngle, rScale(10)],
+    [endAngle, 0],
   ];
 
   const segmentPath = d3
-    .lineRadial()
-    .angle((d: any) => d.angle)
-    .radius((d: any) => d.radius)
+    .lineRadial<[number, number]>()
+    .angle((d: [number, number]) => d[0])
+    .radius((d: [number, number]) => d[1])
     .curve(d3.curveLinearClosed);
 
   svg
@@ -442,12 +526,7 @@ export function shadeSegments({
   rScale,
   angleSlice,
   shadedSegments,
-}: {
-  svg: any;
-  rScale: any;
-  angleSlice: any;
-  shadedSegments: any;
-}) {
+}: ShadeSegmentsParams): void {
   if (!Array.isArray(shadedSegments)) {
     console.error("shadedSegments is not an array");
     return;
@@ -458,8 +537,7 @@ export function shadeSegments({
   );
 }
 
-
-export function addTooltip() {
+export function addTooltip(): void {
   d3.select("body")
     .append("div")
     .attr("class", "tooltip")
@@ -470,11 +548,7 @@ export function addToggles({
   svg,
   show,
   toggleShow,
-}: {
-  svg: d3.Selection<SVGGElement, unknown, null, undefined>;
-  show: { [key: string]: boolean };
-  toggleShow: (option: string) => void;
-}) {
+}: AddTogglesParams): void {
   const toggleContainer = svg
     .append("g")
     .attr("class", "toggles")
@@ -491,13 +565,7 @@ export function toggleItem({
   index,
   show,
   toggleShow,
-}: {
-  toggleContainer: d3.Selection<SVGGElement, unknown, null, undefined>;
-  option: string;
-  index: number;
-  show: { [key: string]: boolean };
-  toggleShow: (option: string) => void;
-}) {
+}: ToggleItemParams): void {
   const toggleItem = toggleContainer
     .append("g")
     .attr("class", "toggle-item")
@@ -506,6 +574,7 @@ export function toggleItem({
     .on("click", () => {
       toggleShow(option);
     });
+
   toggleItem
     .append("rect")
     .attr("width", 10)
@@ -534,15 +603,7 @@ export function addLegend({
   selectedSeries,
   toggleSeries,
   nKey,
-}: {
-  svg: any;
-  data: any;
-  width: number;
-  color: any;
-  selectedSeries: any;
-  toggleSeries: any;
-  nKey: any;
-}) {
+}: AddLegendParams): void {
   const legend = svg.append("g").attr("transform", "translate(0, 0)");
 
   data.forEach((series: any, index: number) => {
@@ -558,15 +619,7 @@ export function legendItem({
   selectedSeries,
   toggleSeries,
   nKey,
-}: {
-  legend: any;
-  series: any;
-  index: number;
-  color: any;
-  selectedSeries: any;
-  toggleSeries: any;
-  nKey: any;
-}) {
+}: LegendItemParams): void {
   const legendRow = legend
     .append("g")
     .attr("transform", `translate(0, ${index * 25})`)
@@ -574,6 +627,7 @@ export function legendItem({
     .on("click", () => {
       toggleSeries(series[nKey]);
     });
+
   legendRow
     .append("circle")
     .attr("cx", 8)
@@ -599,10 +653,7 @@ export function legendItem({
 export function addAnnotations({
   svg,
   radius,
-}: {
-  svg: any;
-  radius: number;
-}) {
+}: AddAnnotationsParams): void {
   svg
     .append("line")
     .attr("x1", -radius)
@@ -727,9 +778,7 @@ export function addAnnotations({
 
 export function initializeShow({
   config,
-}: {
-  config: any;
-}) {
+}: InitializeShowParams): { [key: string]: boolean } {
   const defaultFeatures = config.defaultFeatures || [];
   const features = [
     "grid",
@@ -765,19 +814,7 @@ export function initializeRadarElements({
   allData,
   shadedSegments,
   radius,
-}: {
-  svg: any;
-  filteredData: any;
-  rScale: any;
-  angleSlice: any;
-  initialLoad: boolean;
-  seriesColorMap: any;
-  config: any;
-  show: any;
-  allData: any;
-  shadedSegments: any;
-  radius: number;
-}) {
+}: InitializeRadarElementsParams): void {
   if (show.areas)
     drawRadarAreas({
       svg,
@@ -799,7 +836,7 @@ export function initializeRadarElements({
       config,
     });
   if (show.shadedSegments)
-    shadeSegments({ svg, rScale, angleSlice, config, shadedSegments });
+    shadeSegments({ svg, rScale, angleSlice, shadedSegments });
   if (show.grid) drawGrid({ svg, radius });
   if (show.axis)
     drawAxis({ svg, data: filteredData, rScale, angleSlice, config });
@@ -811,8 +848,8 @@ export function initializeRadarElements({
       rScale,
       angleSlice,
       config,
-      color: seriesColorMap.get(config.nKey),
-      selectedSeries: seriesColorMap,
+      color: (key: string) => seriesColorMap.get(key) as string,
+      selectedSeries: new Set(Array.from(seriesColorMap.keys())),
     });
   if (show.points)
     drawRadarPoints({
