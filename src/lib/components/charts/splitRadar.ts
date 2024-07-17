@@ -315,7 +315,6 @@ export function addTooltip() {
 }
 
 
-// New functions for toggles
 export function addToggles(
   svg: d3.Selection<SVGGElement, unknown, null, undefined>,
   show: { [key: string]: boolean },
@@ -327,37 +326,46 @@ export function addToggles(
     .attr('transform', 'translate(0, 0)');
 
   Object.keys(show).forEach((option, index) => {
-    const toggleItem = toggleContainer
-      .append('g')
-      .attr('class', 'toggle-item')
-      .attr('transform', `translate(0, ${index * 25})`); // Adjusted spacing for uniform size
-
-    toggleItem
-      .append('rect')
-      .attr('width', 16) // Standardized size
-      .attr('height', 16) // Standardized size
-      .attr('fill', show[option] ? '#7597c9' : 'white')
-      .attr('stroke', '#7597c9')
-      .attr('stroke-width', 2)
-      .style('cursor', 'pointer')
-      .on('click', () => {
-        toggleShow(option);
-      });
-
-    toggleItem
-      .append('text')
-      .attr('x', 22) // Standardized spacing
-      .attr('y', 12) // Adjusted for alignment
-      .style('font-size', '14px') // Standardized font size
-      .style('fill', '#333')
-      .text(option)
-      .style('cursor', 'pointer')
-      .on('click', () => {
-        toggleShow(option);
-      });
+    toggleItem(toggleContainer, option, index, show, toggleShow);
   });
 }
 
+export function toggleItem(
+  toggleContainer: d3.Selection<SVGGElement, unknown, null, undefined>,
+  option: string,
+  index: number,
+  show: { [key: string]: boolean },
+  toggleShow: (option: string) => void
+): void {
+  const toggleItem = toggleContainer
+    .append('g')
+    .attr('class', 'toggle-item')
+    .attr('transform', `translate(0, ${index * 25})`) // Adjusted spacing for uniform size
+    .style('cursor', 'pointer')
+      .on('click', () => {
+        toggleShow(option);
+      });
+  toggleItem
+    .append('rect')
+    .attr('width', 10) // Standardized size
+    .attr('height', 10) // Standardized size
+    .attr('x', 3) // Positioned at the start of the row
+    .attr('y', 2) // Centered vertically in the 25px height
+    .attr('fill', show[option] ? '#7597c9' : 'white')
+    .attr('stroke', '#7597c9')
+    .attr('stroke-width', 2)
+
+
+  toggleItem
+  .append('text')
+  .attr('x', 22) // Standardized spacing
+  .attr('y', 12) // Adjusted for alignment
+  .style('font-size', '14px') // Standardized font size
+  .attr('text-anchor', 'start')
+  .style('text-transform', 'capitalize')
+  .text(option)
+
+}
 
 export function addLegend(params: any): void {
   const { svg, data } = params;
@@ -377,8 +385,11 @@ export function legendItem(
   const { color, selectedSeries, toggleSeries, nKey } = params;
   const legendRow = legend
     .append('g')
-    .attr('transform', `translate(0, ${index * 25})`); // Adjusted spacing for uniform size
-
+    .attr('transform', `translate(0, ${index * 25})`) // Adjusted spacing for uniform size
+    .style('cursor', 'pointer')
+    .on('click', () => {
+      toggleSeries(series[nKey]);
+    });
   legendRow
     .append('circle') // Changed from 'rect' to 'circle'
     .attr('cx', 8) // Center x of the circle
@@ -390,10 +401,7 @@ export function legendItem(
     )
     .style('stroke', color(series[nKey]))
     .style('stroke-width', 2)
-    .style('cursor', 'pointer')
-    .on('click', () => {
-      toggleSeries(series[nKey]);
-    });
+  
 
   legendRow
     .append('text')
@@ -403,9 +411,6 @@ export function legendItem(
     .attr('text-anchor', 'start')
     .style('text-transform', 'capitalize')
     .text(series[nKey])
-    .on('click', () => {
-      toggleSeries(series[nKey]);
-    });
 }
 
 
