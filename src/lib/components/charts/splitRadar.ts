@@ -1,6 +1,6 @@
 import * as d3 from "d3";
 
-interface RadarConfig {
+export interface RadarConfig {
   variant: string;
   nKey: string;
   xKey: string;
@@ -27,14 +27,15 @@ interface RadarConfig {
     opacity: number;
   }[];
 }
-interface InitializeSeriesColorsParams {
+
+export interface InitializeSeriesColorsParams {
   data: Record<string, any>[];
   seriesKey: string;
   seriesColorMap: Map<string, string>;
   customColorScale: string[];
 }
 
-interface DrawHeatPointParams {
+export interface DrawHeatPointParams {
   svg: d3.Selection<SVGGElement, unknown, null, undefined>;
   data: Map<any, Record<string, any>[]>;
   rScale: d3.ScaleLinear<number, number>;
@@ -44,26 +45,26 @@ interface DrawHeatPointParams {
   selectedSeries: Set<string>;
 }
 
-interface InitializeSVGParams {
+export interface InitializeSVGParams {
   margin: { top: number; right: number; bottom: number; left: number };
   width: number;
   height: number;
 }
 
-interface CalculateAngleSliceParams {
+export interface CalculateAngleSliceParams {
   data: Map<any, Record<string, any>[]>;
 }
 
-interface InitializeScaleParams {
+export interface InitializeScaleParams {
   radius: number;
 }
 
-interface DrawGridParams {
+export interface DrawGridParams {
   svg: d3.Selection<SVGGElement, unknown, null, undefined>;
   radius: number;
 }
 
-interface DrawAxisParams {
+export interface DrawAxisParams {
   svg: d3.Selection<SVGGElement, unknown, null, undefined>;
   data: Map<any, Record<string, any>[]>;
   rScale: d3.ScaleLinear<number, number>;
@@ -71,7 +72,7 @@ interface DrawAxisParams {
   config: RadarConfig;
 }
 
-interface DrawRadarAreasParams {
+export interface DrawRadarAreasParams {
   svg: d3.Selection<SVGGElement, unknown, null, undefined>;
   data: Map<any, Record<string, any>[]>;
   rScale: d3.ScaleLinear<number, number>;
@@ -81,7 +82,7 @@ interface DrawRadarAreasParams {
   config: RadarConfig;
 }
 
-interface DrawRadarLinesParams {
+export interface DrawRadarLinesParams {
   svg: d3.Selection<SVGGElement, unknown, null, undefined>;
   data: Map<any, Record<string, any>[]>;
   rScale: d3.ScaleLinear<number, number>;
@@ -91,7 +92,7 @@ interface DrawRadarLinesParams {
   config: RadarConfig;
 }
 
-interface DrawRadarPointsParams {
+export interface DrawRadarPointsParams {
   svg: d3.Selection<SVGGElement, unknown, null, undefined>;
   data: Map<any, Record<string, any>[]>;
   rScale: d3.ScaleLinear<number, number>;
@@ -102,7 +103,7 @@ interface DrawRadarPointsParams {
   config: RadarConfig;
 }
 
-interface ShadeSegmentParams {
+export interface ShadeSegmentParams {
   svg: d3.Selection<SVGGElement, unknown, null, undefined>;
   rScale: d3.ScaleLinear<number, number>;
   angleSlice: number;
@@ -114,7 +115,7 @@ interface ShadeSegmentParams {
   };
 }
 
-interface ShadeSegmentsParams {
+export interface ShadeSegmentsParams {
   svg: d3.Selection<SVGGElement, unknown, null, undefined>;
   rScale: d3.ScaleLinear<number, number>;
   angleSlice: number;
@@ -127,13 +128,13 @@ interface ShadeSegmentsParams {
   config: RadarConfig;
 }
 
-interface AddTogglesParams {
+export interface AddTogglesParams {
   svg: d3.Selection<SVGGElement, unknown, null, undefined>;
   show: { [key: string]: boolean };
   toggleShow: (option: string) => void;
 }
 
-interface ToggleItemParams {
+export interface ToggleItemParams {
   toggleContainer: d3.Selection<SVGGElement, unknown, null, undefined>;
   option: string;
   index: number;
@@ -141,8 +142,8 @@ interface ToggleItemParams {
   toggleShow: (option: string) => void;
 }
 
-interface AddLegendParams {
-  svg: d3.Selection<SVGGElement, unknown, null, undefined>;
+export interface AddLegendParams {
+  svg: d3.Selection<SVGGElement, unknown, null,  undefined>;
   data: Record<string, any>[];
   width: number;
   color: (key: string) => string;
@@ -151,7 +152,7 @@ interface AddLegendParams {
   nKey: string;
 }
 
-interface LegendItemParams {
+export interface LegendItemParams {
   legend: d3.Selection<SVGGElement, unknown, null, undefined>;
   series: Record<string, any>;
   index: number;
@@ -161,16 +162,16 @@ interface LegendItemParams {
   nKey: string;
 }
 
-interface AddAnnotationsParams {
+export interface AddAnnotationsParams {
   svg: d3.Selection<SVGGElement, unknown, null, undefined>;
   radius: number;
 }
 
-interface InitializeShowParams {
+export interface InitializeShowParams {
   config: RadarConfig;
 }
 
-interface InitializeRadarElementsParams {
+export interface InitializeRadarElementsParams {
   svg: d3.Selection<SVGGElement, unknown, null, undefined>;
   filteredData: Map<any, Record<string, any>[]>;
   rScale: d3.ScaleLinear<number, number>;
@@ -188,9 +189,6 @@ interface InitializeRadarElementsParams {
   }[];
   radius: number;
 }
-
-// Update the rest of the functions similarly to ensure consistent type usage...
-
 
 export function initializeSeriesColors({
   data,
@@ -263,8 +261,6 @@ export function initializeSVG({
       `translate(${width / 2 + margin.left},${height / 2 + margin.top})`
     );
 }
-
-
 
 export function calculateAngleSlice({
   data,
@@ -568,14 +564,15 @@ export function shadeSegments({
   svg,
   rScale,
   angleSlice,
+  shadedSegments,
   config,
 }: ShadeSegmentsParams): void {
-  if (!Array.isArray(config.shadedSegments)) {
-    console.error("hadedSegments is not an array");
+  if (!Array.isArray(shadedSegments)) {
+    console.error("shadedSegments is not an array");
     return;
   }
 
-  config.shadedSegments.forEach((segment: any) =>
+  shadedSegments.forEach((segment: any) =>
     shadeSegment({ svg, rScale, angleSlice, shadedSegment: segment })
   );
 }
@@ -857,7 +854,7 @@ export function initializeRadarElements({
   allData,
   radius,
 }: InitializeRadarElementsParams): void {
-  if (show.areas)
+  if (show.areas) {
     drawRadarAreas({
       svg,
       data: filteredData,
@@ -867,7 +864,8 @@ export function initializeRadarElements({
       seriesColorMap,
       config,
     });
-  if (show.lines)
+  }
+  if (show.lines) {
     drawRadarLines({
       svg,
       data: filteredData,
@@ -877,13 +875,32 @@ export function initializeRadarElements({
       seriesColorMap,
       config,
     });
-  if (show.shadedSegments)
-    shadeSegments({ svg, rScale, angleSlice, config });
-  if (show.grid) drawGrid({ svg, radius });
-  if (show.axis)
-    drawAxis({ svg, data: filteredData, rScale, angleSlice, config });
-  if (show.tooltip) addTooltip();
-  if (show.heat)
+  }
+  if (show.shadedSegments) {
+    shadeSegments({
+      svg,
+      rScale,
+      angleSlice,
+      shadedSegments: config.shadedSegments,
+      config,
+    });
+  }
+  if (show.grid) {
+    drawGrid({ svg, radius });
+  }
+  if (show.axis) {
+    drawAxis({
+      svg,
+      data: filteredData,
+      rScale,
+      angleSlice,
+      config,
+    });
+  }
+  if (show.tooltip) {
+    addTooltip();
+  }
+  if (show.heat) {
     drawHeatPoint({
       svg,
       data: allData,
@@ -893,7 +910,8 @@ export function initializeRadarElements({
       color: (key: string) => seriesColorMap.get(key) as string,
       selectedSeries: new Set(Array.from(seriesColorMap.keys())),
     });
-  if (show.points)
+  }
+  if (show.points) {
     drawRadarPoints({
       svg,
       data: filteredData,
@@ -904,5 +922,8 @@ export function initializeRadarElements({
       show,
       config,
     });
-  if (show.annotations) addAnnotations({ svg, radius });
+  }
+  if (show.annotations) {
+    addAnnotations({ svg, radius });
+  }
 }

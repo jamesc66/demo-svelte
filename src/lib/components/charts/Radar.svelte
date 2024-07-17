@@ -10,21 +10,24 @@
     initializeRadarElements,
     addLegend,
     addToggles,
+    type RadarConfig,
   } from "./splitRadar";
 
-  export let config;
+  export let config: RadarConfig;
   export let data: any[] = [{ room: "", insight: "", value: 0 }];
   export let allData: any[] = [];
 
   let show = initializeShow({ config });
-  let nestedData;
+  let nestedData: Map<any, Record<string, any>[]>;
+  let nestedAllData: Map<any, Record<string, any>[]>;
   let color = d3.scaleOrdinal(config.colors);
   let selectedSeries = new Set(data.map((d) => d[config.seriesKey]));
-  let seriesColorMap = new Map();
+  let seriesColorMap = new Map<string, string>();
   let series = Array.from(new Set(data.map((d) => d[config.seriesKey])));
 
   onMount(() => {
     nestedData = d3.group(data, (d) => d[config.nKey]);
+    nestedAllData = d3.group(allData, (d) => d[config.nKey]);
     initializeSeriesColors({
       data,
       seriesKey: config.seriesKey,
@@ -39,12 +42,13 @@
       selectedSeries,
       seriesColorMap,
       config,
-      allData,
+      allData: nestedAllData,
     });
   });
 
   $: {
     nestedData = d3.group(data, (d) => d[config.nKey]);
+    nestedAllData = d3.group(allData, (d) => d[config.nKey]);
     series = Array.from(new Set(data.map((d) => d[config.seriesKey])));
     drawChart({
       data: nestedData,
@@ -53,7 +57,7 @@
       selectedSeries,
       seriesColorMap,
       config,
-      allData,
+      allData: nestedAllData,
     });
   }
 
@@ -66,26 +70,30 @@
     config,
     allData,
   }: {
-    data: any;
+    data: Map<any, Record<string, any>[]>;
     initialLoad: boolean;
-    show: any;
-    selectedSeries: any;
-    seriesColorMap: any;
-    config: any;
-    allData: any;
+    show: { [key: string]: boolean };
+    selectedSeries: Set<string>;
+    seriesColorMap: Map<string, string>;
+    config: RadarConfig;
+    allData: Map<any, Record<string, any>[]>;
   }) {
     const margin = config.margin;
     const width = config.width - margin.left - margin.right;
     const height = config.height - margin.top - margin.bottom;
     const radius = Math.min(width, height) / 2;
 
-    const svg = initializeSVG({ margin, width, height });
+    const svg = initializeSVG({
+      margin,
+      width,
+      height,
+    }) as unknown as d3.Selection<SVGGElement, unknown, null, undefined>;
     const angleSlice = calculateAngleSlice({ data });
     const rScale = initializeScale({ radius });
 
-    const filteredData = Array.from(data.entries())
-      .filter(([key]) => selectedSeries.has(key))
-      .reduce((acc, [key, values]) => acc.set(key, values), new Map());
+    const filteredData = new Map(
+      Array.from(data.entries()).filter(([key]) => selectedSeries.has(key))
+    );
 
     initializeRadarElements({
       svg,
@@ -97,11 +105,16 @@
       config,
       show,
       allData,
-      shadedSegments: config,
       radius,
+      shadedSegments: config.shadedSegments, // Ensure shadedSegments is included
     });
 
-    const legendContainer = d3.select("#legend");
+    const legendContainer = d3.select("#legend") as d3.Selection<
+      HTMLDivElement,
+      unknown,
+      HTMLElement,
+      any
+    >;
     legendContainer.selectAll("*").remove();
 
     const legendBase = legendContainer
@@ -148,7 +161,7 @@
       selectedSeries,
       seriesColorMap,
       config,
-      allData,
+      allData: nestedAllData,
     });
   }
 
@@ -161,7 +174,7 @@
       selectedSeries,
       seriesColorMap,
       config,
-      allData,
+      allData: nestedAllData,
     });
   }
 </script>
