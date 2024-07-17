@@ -18,67 +18,74 @@
   export let data: any[] = [{ room: "", insight: "", value: 0 }];
   export let allData: any[] = [];
 
-  let show = initializeShow(config);
+  let show = initializeShow({ config });
 
   let nestedData;
   let color = d3.scaleOrdinal(config.colors);
   let selectedSeries = new Set(data.map((d) => d[config.seriesKey]));
   let seriesColorMap = new Map();
 
-  // Define the series variable
   let series = Array.from(new Set(data.map((d) => d[config.seriesKey])));
 
   onMount(() => {
     nestedData = d3.group(data, (d) => d[config.nKey]);
-    initializeSeriesColors(
+    initializeSeriesColors({
       data,
-      config.seriesKey,
+      seriesKey: config.seriesKey,
       seriesColorMap,
-      config.colors
-    );
+      customColorScale: config.colors,
+    });
 
-    drawChart(
-      nestedData,
-      true,
+    drawChart({
+      data: nestedData,
+      initialLoad: true,
       show,
       selectedSeries,
       seriesColorMap,
       config,
-      allData
-    );
+      allData,
+    });
   });
 
   $: {
     nestedData = d3.group(data, (d) => d[config.nKey]);
     series = Array.from(new Set(data.map((d) => d[config.seriesKey])));
-    drawChart(
-      nestedData,
-      false,
+    drawChart({
+      data: nestedData,
+      initialLoad: false,
       show,
       selectedSeries,
       seriesColorMap,
       config,
-      allData
-    );
+      allData,
+    });
   }
 
-  function drawChart(
+  function drawChart({
     data,
     initialLoad,
     show,
     selectedSeries,
     seriesColorMap,
     config,
-    allData
-  ) {
+    allData,
+  }: {
+    data: any;
+    initialLoad: boolean;
+    show: any;
+    selectedSeries: any;
+    seriesColorMap: any;
+    config: any;
+    allData: any;
+  }) {
     const margin = config.margin;
     const width = config.width - margin.left - margin.right;
     const height = config.height - margin.top - margin.bottom;
     const radius = Math.min(width, height) / 2;
 
-    const svg = initializeSVG(margin, width, height);
-    const angleSlice = calculateAngleSlice(data);
-    const rScale = initializeScale(radius);
+    const svg = initializeSVG({ margin, width, height });
+    const angleSlice = calculateAngleSlice({ data });
+    const rScale = initializeScale({ radius });
 
     const filteredData = Array.from(data.entries())
       .filter(([key, values]) => selectedSeries.has(key))
@@ -99,7 +106,7 @@
       },
     ];
 
-    initializeRadarElements(
+    initializeRadarElements({
       svg,
       filteredData,
       rScale,
@@ -110,12 +117,11 @@
       show,
       allData,
       shadedSegments,
-      radius
-    );
+      radius,
+    });
 
-    // Add the custom legend and toggles
     const legendContainer = d3.select("#legend");
-    legendContainer.selectAll("*").remove(); // Clear previous legend elements
+    legendContainer.selectAll("*").remove();
 
     const legendSvg = legendContainer
       .append("svg")
@@ -134,14 +140,14 @@
       nKey: config.nKey,
     });
 
-    addToggles(
-      legendSvg
+    addToggles({
+      svg: legendSvg
         .append("g")
         .attr("class", "toggles")
         .attr("transform", `translate(0, ${series.length * 25})`),
       show,
-      toggleShow
-    );
+      toggleShow,
+    });
   }
 
   function toggleSeries(d: any) {
@@ -150,28 +156,28 @@
     } else {
       selectedSeries.add(d);
     }
-    drawChart(
-      nestedData,
-      false,
+    drawChart({
+      data: nestedData,
+      initialLoad: false,
       show,
       selectedSeries,
       seriesColorMap,
       config,
-      allData
-    );
+      allData,
+    });
   }
 
   function toggleShow(option: string) {
     show[option] = !show[option];
-    drawChart(
-      nestedData,
-      false,
+    drawChart({
+      data: nestedData,
+      initialLoad: false,
       show,
       selectedSeries,
       seriesColorMap,
       config,
-      allData
-    );
+      allData,
+    });
   }
 </script>
 

@@ -2,7 +2,17 @@
 
 import * as d3 from "d3";
 
-export function initializeSeriesColors(data: any, seriesKey: string, seriesColorMap: any, customColorScale: any) {
+export function initializeSeriesColors({
+  data,
+  seriesKey,
+  seriesColorMap,
+  customColorScale,
+}: {
+  data: any;
+  seriesKey: string;
+  seriesColorMap: any;
+  customColorScale: any;
+}) {
   let seriesKeys = new Set(data.map((d: any) => d[seriesKey]));
   let colorScale = d3.scaleOrdinal(customColorScale).domain(seriesKeys);
   seriesKeys.forEach((key) => {
@@ -10,14 +20,36 @@ export function initializeSeriesColors(data: any, seriesKey: string, seriesColor
   });
 }
 
-export function drawHeatPoint(svg: any, data: any, rScale: any, angleSlice: any, config: any, color: any, selectedSeries: any) {
+export function drawHeatPoint({
+  svg,
+  data,
+  rScale,
+  angleSlice,
+  config,
+  color,
+  selectedSeries,
+}: {
+  svg: any;
+  data: any;
+  rScale: any;
+  angleSlice: any;
+  config: any;
+  color: any;
+  selectedSeries: any;
+}) {
   data.forEach((values: any, key: any) => {
-    const newValues = values[config.dataKey].filter((d: any) => selectedSeries.has(d[config.seriesKey]));
+    const newValues = values[config.dataKey].filter((d: any) =>
+      selectedSeries.has(d[config.seriesKey])
+    );
     const keyPercentage = (key / data.length) * 100;
     const opacityRange = [0.1, 0.3];
     const radiusRange = [20, 3];
-    const radius = radiusRange[0] + (radiusRange[1] - radiusRange[0]) * (keyPercentage / 100);
-    const opacity = opacityRange[0] + (opacityRange[1] - opacityRange[0]) * (keyPercentage / 100);
+    const radius =
+      radiusRange[0] +
+      ((radiusRange[1] - radiusRange[0]) * keyPercentage) / 100;
+    const opacity =
+      opacityRange[0] +
+      ((opacityRange[1] - opacityRange[0]) * keyPercentage) / 100;
 
     svg
       .append("g")
@@ -27,11 +59,13 @@ export function drawHeatPoint(svg: any, data: any, rScale: any, angleSlice: any,
       .append("circle")
       .attr(
         "cx",
-        (d: any, j: any) => rScale(d[config.yKey]) * Math.cos(angleSlice * j - Math.PI / 2)
+        (d: any, j: any) =>
+          rScale(d[config.yKey]) * Math.cos(angleSlice * j - Math.PI / 2)
       )
       .attr(
         "cy",
-        (d: any, j: any) => rScale(d[config.yKey]) * Math.sin(angleSlice * j - Math.PI / 2)
+        (d: any, j: any) =>
+          rScale(d[config.yKey]) * Math.sin(angleSlice * j - Math.PI / 2)
       )
       .attr("r", radius)
       .style("fill", (d: any) => color(d.room))
@@ -39,7 +73,15 @@ export function drawHeatPoint(svg: any, data: any, rScale: any, angleSlice: any,
   });
 }
 
-export function initializeSVG(margin: any, width: number, height: number) {
+export function initializeSVG({
+  margin,
+  width,
+  height,
+}: {
+  margin: any;
+  width: number;
+  height: number;
+}) {
   d3.select("#radarChart").selectAll("*").remove();
   return d3
     .select("#radarChart")
@@ -53,15 +95,29 @@ export function initializeSVG(margin: any, width: number, height: number) {
     );
 }
 
-export function calculateAngleSlice(data: any) {
+export function calculateAngleSlice({
+  data,
+}: {
+  data: any;
+}) {
   return (Math.PI * 2) / Array.from(data.values())[0].length;
 }
 
-export function initializeScale(radius: number) {
+export function initializeScale({
+  radius,
+}: {
+  radius: number;
+}) {
   return d3.scaleLinear().range([0, radius]).domain([0, 10]);
 }
 
-export function drawGrid(svg: any, radius: number) {
+export function drawGrid({
+  svg,
+  radius,
+}: {
+  svg: any;
+  radius: number;
+}) {
   const axisGrid = svg.append("g").attr("class", "axisWrapper");
 
   axisGrid
@@ -77,7 +133,19 @@ export function drawGrid(svg: any, radius: number) {
     .style("stroke-opacity", 0.75);
 }
 
-export function drawAxis(svg: any, data: any, rScale: any, angleSlice: any, config: any) {
+export function drawAxis({
+  svg,
+  data,
+  rScale,
+  angleSlice,
+  config,
+}: {
+  svg: any;
+  data: any;
+  rScale: any;
+  angleSlice: any;
+  config: any;
+}) {
   svg
     .selectAll(".axis")
     .data(Array.from(data.values())[0])
@@ -97,7 +165,7 @@ export function drawAxis(svg: any, data: any, rScale: any, angleSlice: any, conf
         .style("stroke", "lightgrey")
         .style("stroke-width", "1px");
 
-      const labelOffset = 20; // Adjust this value to increase/decrease the space
+      const labelOffset = 20;
 
       d3.select(this)
         .append("text")
@@ -114,17 +182,32 @@ export function drawAxis(svg: any, data: any, rScale: any, angleSlice: any, conf
         .attr("text-anchor", "middle")
         .text(d[config.xKey]);
 
-      // Add a small circle at the tip of the axis line
       d3.select(this)
         .append("circle")
         .attr("cx", x2)
         .attr("cy", y2)
-        .attr("r", 2) // Radius of the small circle
+        .attr("r", 2)
         .style("fill", "lightgrey");
     });
 }
 
-export function drawRadarAreas(svg: any, data: any, rScale: any, angleSlice: any, initialLoad: boolean, seriesColorMap: any, config: any) {
+export function drawRadarAreas({
+  svg,
+  data,
+  rScale,
+  angleSlice,
+  initialLoad,
+  seriesColorMap,
+  config,
+}: {
+  svg: any;
+  data: any;
+  rScale: any;
+  angleSlice: any;
+  initialLoad: boolean;
+  seriesColorMap: any;
+  config: any;
+}) {
   const radarArea = d3
     .areaRadial()
     .angle((d: any, i: number) => i * angleSlice)
@@ -152,7 +235,23 @@ export function drawRadarAreas(svg: any, data: any, rScale: any, angleSlice: any
   });
 }
 
-export function drawRadarLines(svg: any, data: any, rScale: any, angleSlice: any, initialLoad: boolean, seriesColorMap: any, config: any) {
+export function drawRadarLines({
+  svg,
+  data,
+  rScale,
+  angleSlice,
+  initialLoad,
+  seriesColorMap,
+  config,
+}: {
+  svg: any;
+  data: any;
+  rScale: any;
+  angleSlice: any;
+  initialLoad: boolean;
+  seriesColorMap: any;
+  config: any;
+}) {
   const radarLine = d3
     .lineRadial()
     .radius((d: any) => rScale(d[config.yKey]))
@@ -180,37 +279,57 @@ export function drawRadarLines(svg: any, data: any, rScale: any, angleSlice: any
   });
 }
 
-export function drawRadarPoints(svg: any, data: any, rScale: any, angleSlice: any, initialLoad: boolean, seriesColorMap: any, show: any, config: any) {
+export function drawRadarPoints({
+  svg,
+  data,
+  rScale,
+  angleSlice,
+  initialLoad,
+  seriesColorMap,
+  show,
+  config,
+}: {
+  svg: any;
+  data: any;
+  rScale: any;
+  angleSlice: any;
+  initialLoad: boolean;
+  seriesColorMap: any;
+  show: any;
+  config: any;
+}) {
   data.forEach((values: any, key: any) => {
     const points = svg.append("g").selectAll(".dot").data(values).enter();
 
-    // Outer colored circle
     points
       .append("circle")
       .attr(
         "cx",
-        (d: any, j: any) => rScale(d[config.yKey]) * Math.cos(angleSlice * j - Math.PI / 2)
+        (d: any, j: any) =>
+          rScale(d[config.yKey]) * Math.cos(angleSlice * j - Math.PI / 2)
       )
       .attr(
         "cy",
-        (d: any, j: any) => rScale(d[config.yKey]) * Math.sin(angleSlice * j - Math.PI / 2)
+        (d: any, j: any) =>
+          rScale(d[config.yKey]) * Math.sin(angleSlice * j - Math.PI / 2)
       )
-      .attr("r", 3) // Outer circle radius
+      .attr("r", 3)
       .style("fill", seriesColorMap.get(key))
       .style("stroke", "none");
 
-    // Inner white circle
     points
       .append("circle")
       .attr(
         "cx",
-        (d: any, j: any) => rScale(d[config.yKey]) * Math.cos(angleSlice * j - Math.PI / 2)
+        (d: any, j: any) =>
+          rScale(d[config.yKey]) * Math.cos(angleSlice * j - Math.PI / 2)
       )
       .attr(
         "cy",
-        (d: any, j: any) => rScale(d[config.yKey]) * Math.sin(angleSlice * j - Math.PI / 2)
+        (d: any, j: any) =>
+          rScale(d[config.yKey]) * Math.sin(angleSlice * j - Math.PI / 2)
       )
-      .attr("r", 2) // Inner circle radius (smaller than outer circle)
+      .attr("r", 2)
       .style("fill", "#fff")
       .style("stroke", seriesColorMap.get(key))
       .style("stroke-width", 1)
@@ -234,7 +353,6 @@ export function drawRadarPoints(svg: any, data: any, rScale: any, angleSlice: an
         }
       });
 
-    // Adding invisible larger circles for hover near functionality
     svg
       .append("g")
       .selectAll(".hover-area")
@@ -243,13 +361,15 @@ export function drawRadarPoints(svg: any, data: any, rScale: any, angleSlice: an
       .append("circle")
       .attr(
         "cx",
-        (d: any, j: any) => rScale(d[config.yKey]) * Math.cos(angleSlice * j - Math.PI / 2)
+        (d: any, j: any) =>
+          rScale(d[config.yKey]) * Math.cos(angleSlice * j - Math.PI / 2)
       )
       .attr(
         "cy",
-        (d: any, j: any) => rScale(d[config.yKey]) * Math.sin(angleSlice * j - Math.PI / 2)
+        (d: any, j: any) =>
+          rScale(d[config.yKey]) * Math.sin(angleSlice * j - Math.PI / 2)
       )
-      .attr("r", 10) // Larger radius for easier hover targeting
+      .attr("r", 10)
       .style("fill", "none")
       .style("pointer-events", "all")
       .on("mouseover", function (event: any, d: any) {
@@ -273,8 +393,24 @@ export function drawRadarPoints(svg: any, data: any, rScale: any, angleSlice: an
       });
   });
 }
+// Updated functions with safety checks and better error handling
 
-function shadeSegment(svg: any, rScale: any, angleSlice: any, config: any, shadedSegment: any) {
+export function shadeSegment({
+  svg,
+  rScale,
+  angleSlice,
+  shadedSegment,
+}: {
+  svg: any;
+  rScale: any;
+  angleSlice: any;
+  shadedSegment: any;
+}) {
+  if (!shadedSegment) {
+    console.error("shadedSegment is undefined");
+    return;
+  }
+
   const { startAxis, endAxis, color, opacity } = shadedSegment;
 
   const startAngle = angleSlice * startAxis - Math.PI / 2;
@@ -301,11 +437,27 @@ function shadeSegment(svg: any, rScale: any, angleSlice: any, config: any, shade
     .style("fill-opacity", opacity);
 }
 
-export function shadeSegments(svg: any, rScale: any, angleSlice: any, config: any, shadedSegments: any) {
+export function shadeSegments({
+  svg,
+  rScale,
+  angleSlice,
+  shadedSegments,
+}: {
+  svg: any;
+  rScale: any;
+  angleSlice: any;
+  shadedSegments: any;
+}) {
+  if (!Array.isArray(shadedSegments)) {
+    console.error("shadedSegments is not an array");
+    return;
+  }
+
   shadedSegments.forEach((segment: any) =>
-    shadeSegment(svg, rScale, angleSlice, config, segment)
+    shadeSegment({ svg, rScale, angleSlice, shadedSegment: segment })
   );
 }
+
 
 export function addTooltip() {
   d3.select("body")
@@ -314,109 +466,143 @@ export function addTooltip() {
     .style("opacity", 0);
 }
 
-
-export function addToggles(
-  svg: d3.Selection<SVGGElement, unknown, null, undefined>,
-  show: { [key: string]: boolean },
-  toggleShow: (option: string) => void
-): void {
+export function addToggles({
+  svg,
+  show,
+  toggleShow,
+}: {
+  svg: d3.Selection<SVGGElement, unknown, null, undefined>;
+  show: { [key: string]: boolean };
+  toggleShow: (option: string) => void;
+}) {
   const toggleContainer = svg
-    .append('g')
-    .attr('class', 'toggles')
-    .attr('transform', 'translate(0, 0)');
+    .append("g")
+    .attr("class", "toggles")
+    .attr("transform", "translate(0, 0)");
 
   Object.keys(show).forEach((option, index) => {
-    toggleItem(toggleContainer, option, index, show, toggleShow);
+    toggleItem({ toggleContainer, option, index, show, toggleShow });
   });
 }
 
-export function toggleItem(
-  toggleContainer: d3.Selection<SVGGElement, unknown, null, undefined>,
-  option: string,
-  index: number,
-  show: { [key: string]: boolean },
-  toggleShow: (option: string) => void
-): void {
+export function toggleItem({
+  toggleContainer,
+  option,
+  index,
+  show,
+  toggleShow,
+}: {
+  toggleContainer: d3.Selection<SVGGElement, unknown, null, undefined>;
+  option: string;
+  index: number;
+  show: { [key: string]: boolean };
+  toggleShow: (option: string) => void;
+}) {
   const toggleItem = toggleContainer
-    .append('g')
-    .attr('class', 'toggle-item')
-    .attr('transform', `translate(0, ${index * 25})`) // Adjusted spacing for uniform size
-    .style('cursor', 'pointer')
-      .on('click', () => {
-        toggleShow(option);
-      });
+    .append("g")
+    .attr("class", "toggle-item")
+    .attr("transform", `translate(0, ${index * 25})`)
+    .style("cursor", "pointer")
+    .on("click", () => {
+      toggleShow(option);
+    });
   toggleItem
-    .append('rect')
-    .attr('width', 10) // Standardized size
-    .attr('height', 10) // Standardized size
-    .attr('x', 3) // Positioned at the start of the row
-    .attr('y', 2) // Centered vertically in the 25px height
-    .attr('fill', show[option] ? '#7597c9' : 'white')
-    .attr('stroke', '#7597c9')
-    .attr('stroke-width', 2)
-
+    .append("rect")
+    .attr("width", 10)
+    .attr("height", 10)
+    .attr("x", 3)
+    .attr("y", 2)
+    .attr("fill", show[option] ? "#7597c9" : "white")
+    .attr("stroke", "#7597c9")
+    .attr("stroke-width", 2);
 
   toggleItem
-  .append('text')
-  .attr('x', 22) // Standardized spacing
-  .attr('y', 12) // Adjusted for alignment
-  .style('font-size', '14px') // Standardized font size
-  .attr('text-anchor', 'start')
-  .style('text-transform', 'capitalize')
-  .text(option)
-
+    .append("text")
+    .attr("x", 22)
+    .attr("y", 12)
+    .style("font-size", "14px")
+    .attr("text-anchor", "start")
+    .style("text-transform", "capitalize")
+    .text(option);
 }
 
-export function addLegend(params: any): void {
-  const { svg, data } = params;
-  const legend = svg.append('g').attr('transform', 'translate(0, 0)');
+export function addLegend({
+  svg,
+  data,
+  width,
+  color,
+  selectedSeries,
+  toggleSeries,
+  nKey,
+}: {
+  svg: any;
+  data: any;
+  width: number;
+  color: any;
+  selectedSeries: any;
+  toggleSeries: any;
+  nKey: any;
+}) {
+  const legend = svg.append("g").attr("transform", "translate(0, 0)");
 
-  data.forEach((series, index) => {
-    legendItem(legend, series, index, params);
+  data.forEach((series: any, index: number) => {
+    legendItem({ legend, series, index, color, selectedSeries, toggleSeries, nKey });
   });
 }
 
-export function legendItem(
-  legend: any,
-  series: any,
-  index: number,
-  params: any
-): void {
-  const { color, selectedSeries, toggleSeries, nKey } = params;
+export function legendItem({
+  legend,
+  series,
+  index,
+  color,
+  selectedSeries,
+  toggleSeries,
+  nKey,
+}: {
+  legend: any;
+  series: any;
+  index: number;
+  color: any;
+  selectedSeries: any;
+  toggleSeries: any;
+  nKey: any;
+}) {
   const legendRow = legend
-    .append('g')
-    .attr('transform', `translate(0, ${index * 25})`) // Adjusted spacing for uniform size
-    .style('cursor', 'pointer')
-    .on('click', () => {
+    .append("g")
+    .attr("transform", `translate(0, ${index * 25})`)
+    .style("cursor", "pointer")
+    .on("click", () => {
       toggleSeries(series[nKey]);
     });
   legendRow
-    .append('circle') // Changed from 'rect' to 'circle'
-    .attr('cx', 8) // Center x of the circle
-    .attr('cy', 8) // Center y of the circle
-    .attr('r', 5) // Reduced radius for smaller circles
+    .append("circle")
+    .attr("cx", 8)
+    .attr("cy", 8)
+    .attr("r", 5)
     .attr(
-      'fill',
-      selectedSeries.has(series[nKey]) ? color(series[nKey]) : 'white'
+      "fill",
+      selectedSeries.has(series[nKey]) ? color(series[nKey]) : "white"
     )
-    .style('stroke', color(series[nKey]))
-    .style('stroke-width', 2)
-  
+    .style("stroke", color(series[nKey]))
+    .style("stroke-width", 2);
 
   legendRow
-    .append('text')
-    .attr('x', 22) // Standardized spacing
-    .attr('y', 12) // Adjusted for alignment
-    .style('font-size', '14px') // Standardized font size
-    .attr('text-anchor', 'start')
-    .style('text-transform', 'capitalize')
-    .text(series[nKey])
+    .append("text")
+    .attr("x", 22)
+    .attr("y", 12)
+    .style("font-size", "14px")
+    .attr("text-anchor", "start")
+    .style("text-transform", "capitalize")
+    .text(series[nKey]);
 }
 
-
-
-export function addAnnotations(svg: any, radius: number) {
-  // Adding horizontal line with labels
+export function addAnnotations({
+  svg,
+  radius,
+}: {
+  svg: any;
+  radius: number;
+}) {
   svg
     .append("line")
     .attr("x1", -radius)
@@ -426,7 +612,6 @@ export function addAnnotations(svg: any, radius: number) {
     .style("stroke", "#7597C9")
     .style("stroke-width", 1);
 
-  // Adding house icon above "Structural" text
   svg
     .append("foreignObject")
     .attr("x", -radius - 30)
@@ -438,7 +623,6 @@ export function addAnnotations(svg: any, radius: number) {
       '<svg width="19" height="18" viewBox="0 0 19 18" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9.86778 11.0601H7.12411V17.3186H2.42579V9.5H0.59668L9.09668 1" stroke="#7597C9" stroke-width="0.5"/><path d="M8.32558 11.0601H11.0693V17.3186H15.7676V9.5H17.5967L9.09668 1" stroke="#7597C9" stroke-width="0.5"/></svg>'
     );
 
-  // Adding structural text with border
   svg
     .append("rect")
     .attr("x", -radius - 60)
@@ -461,19 +645,17 @@ export function addAnnotations(svg: any, radius: number) {
     .style("fill", "#7597C9")
     .text("Structural");
 
-  // Adding people icon below "Environmental" text
   svg
     .append("foreignObject")
     .attr("x", -radius - 35)
-    .attr("y", 20) // Adjusted y position to avoid clipping
+    .attr("y", 20)
     .attr("width", 24)
     .attr("height", 15)
     .append("xhtml:div")
     .html(
-      '<svg width="24" height="11" viewBox="0 0 24 11" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12.1169" cy="3.27701" r="2.48649" stroke="#7597C9" stroke-width="0.5"/><circle cx="5.63028" cy="2.73649" r="2.48649" stroke="#7597C9" stroke-width="0.5"/><circle cx="2.73649" cy="2.73649" r="2.48649" transform="matrix(-1 0 0 1 21.3401 0)" stroke="#7597C9" stroke-width="0.5"/><path d="M7.08325 10C7.36478 8.67118 8.75217 6.01352 12.0495 6.01352C15.3468 6.01352 16.8693 8.67118 17.2184 10" stroke="#7597C9" stroke-width="0.5"/><path d="M0.59668 9.45945C0.878211 8.13062 2.2656 5.47296 5.5629 5.47296C6.63242 5.47296 7.51522 5.75258 8.23181 6.17577" stroke="#7597C9" stroke-width="0.5"/><path d="M23.6372 9.45945C23.3557 8.13062 21.9683 5.47296 18.671 5.47296C17.6015 5.47296 16.7187 5.75258 16.0021 6.17577" stroke="#7597C9" stroke-width="0.5"/></svg>'
+      '<svg width="24" height="11" viewBox="0 0 24 11" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12.1169" cy="3.27701" r="2.48649" stroke="#7597C9" stroke-width="0.5"/><circle cx="5.63028" cy="2.73649" r="2.48649" stroke-width="0.5"/><circle cx="2.73649" cy="2.73649" r="2.48649" stroke-width="0.5"/><path d="M7.08325 10C7.36478 8.67118 8.75217 6.01352 12.0495 6.01352C15.3468 6.01352 16.8693 8.67118 17.2184 10" stroke="#7597C9" stroke-width="0.5"/><path d="M0.59668 9.45945C0.878211 8.13062 2.2656 5.47296 5.5629 5.47296C6.63242 5.47296 7.51522 5.75258 8.23181 6.17577" stroke="#7597C9" stroke-width="0.5"/><path d="M23.6372 9.45945C23.3557 8.13062 21.9683 5.47296 18.671 5.47296C17.6015 5.47296 16.7187 5.75258 16.0021 6.17577" stroke="#7597C9" stroke-width="0.5"/></svg>'
     );
 
-  // Adding environmental text with border
   svg
     .append("rect")
     .attr("x", -radius - 82)
@@ -491,12 +673,11 @@ export function addAnnotations(svg: any, radius: number) {
     .attr("x", -radius - 10)
     .attr("y", 13)
     .attr("dy", "0.35em")
-    .style("font-size", "10px") // Smaller font size
+    .style("font-size", "10px")
     .attr("text-anchor", "end")
     .style("fill", "#7597C9")
     .text("Environmental");
 
-  // Define arrow markers for the vertical line
   svg
     .append("defs")
     .append("marker")
@@ -528,8 +709,7 @@ export function addAnnotations(svg: any, radius: number) {
     .style("stroke", "#7597C9")
     .style("stroke-width", 1.5);
 
-  // Adding vertical line with arrows, 4 rem (64 pixels) tall
-  const lineHeight = 4 * 16; // 4 rem in pixels
+  const lineHeight = 4 * 16;
   const lineY1 = -lineHeight / 2;
   const lineY2 = lineHeight / 2;
 
@@ -545,26 +725,27 @@ export function addAnnotations(svg: any, radius: number) {
     .attr("marker-end", "url(#arrow-up)");
 }
 
-
-export function initializeShow(config: any) {
+export function initializeShow({
+  config,
+}: {
+  config: any;
+}) {
   const defaultFeatures = config.defaultFeatures || [];
   const features = [
-    'grid',
-    'axis',
-    'areas',
-    'lines',
-    'points',
-    // 'legend',
-    // 'tooltip',
-    'heat',
-    'shadedSegments',
-    'annotations'
+    "grid",
+    "axis",
+    "areas",
+    "lines",
+    "points",
+    "heat",
+    "shadedSegments",
+    "annotations",
   ];
 
   const show: { [key: string]: boolean } = {};
 
-  features.forEach(feature => {
-    show[feature] = defaultFeatures.length > 0
+  features.forEach((feature) => {
+    show[feature] = defaultFeatures.length
       ? defaultFeatures.includes(feature)
       : config.show.includes(feature);
   });
@@ -572,9 +753,7 @@ export function initializeShow(config: any) {
   return show;
 }
 
-
-
-export function initializeRadarElements(
+export function initializeRadarElements({
   svg,
   filteredData,
   rScale,
@@ -585,17 +764,66 @@ export function initializeRadarElements(
   show,
   allData,
   shadedSegments,
-  radius
-) {
-  if (show.areas) drawRadarAreas(svg, filteredData, rScale, angleSlice, initialLoad, seriesColorMap, config);
-  if (show.lines) drawRadarLines(svg, filteredData, rScale, angleSlice, initialLoad, seriesColorMap, config);
-  if (show.shadedSegments) shadeSegments(svg, rScale, angleSlice, config, shadedSegments);
-  if (show.grid) drawGrid(svg, radius);
-  if (show.axis) drawAxis(svg, filteredData, rScale, angleSlice, config);
-  // if (show.legend) addLegend();
+  radius,
+}: {
+  svg: any;
+  filteredData: any;
+  rScale: any;
+  angleSlice: any;
+  initialLoad: boolean;
+  seriesColorMap: any;
+  config: any;
+  show: any;
+  allData: any;
+  shadedSegments: any;
+  radius: number;
+}) {
+  if (show.areas)
+    drawRadarAreas({
+      svg,
+      data: filteredData,
+      rScale,
+      angleSlice,
+      initialLoad,
+      seriesColorMap,
+      config,
+    });
+  if (show.lines)
+    drawRadarLines({
+      svg,
+      data: filteredData,
+      rScale,
+      angleSlice,
+      initialLoad,
+      seriesColorMap,
+      config,
+    });
+  if (show.shadedSegments)
+    shadeSegments({ svg, rScale, angleSlice, config, shadedSegments });
+  if (show.grid) drawGrid({ svg, radius });
+  if (show.axis)
+    drawAxis({ svg, data: filteredData, rScale, angleSlice, config });
   if (show.tooltip) addTooltip();
-  // if (config.togle) addToggles();
-  if (show.heat) drawHeatPoint(svg, allData, rScale, angleSlice, config, color, selectedSeries);
-  if (show.points) drawRadarPoints(svg, filteredData, rScale, angleSlice, initialLoad, seriesColorMap, show, config);
-  if (show.annotations) addAnnotations(svg, radius);
+  if (show.heat)
+    drawHeatPoint({
+      svg,
+      data: allData,
+      rScale,
+      angleSlice,
+      config,
+      color: seriesColorMap.get(config.nKey),
+      selectedSeries: seriesColorMap,
+    });
+  if (show.points)
+    drawRadarPoints({
+      svg,
+      data: filteredData,
+      rScale,
+      angleSlice,
+      initialLoad,
+      seriesColorMap,
+      show,
+      config,
+    });
+  if (show.annotations) addAnnotations({ svg, radius });
 }
