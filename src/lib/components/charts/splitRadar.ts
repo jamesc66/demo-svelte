@@ -1,7 +1,34 @@
 import * as d3 from "d3";
 
+interface RadarConfig {
+  variant: string;
+  nKey: string;
+  xKey: string;
+  yKey: string;
+  dataKey: string;
+  timeKey: string;
+  seriesKey: string;
+  show: string[];
+  togle: boolean;
+  defaultFeatures: string[];
+  margin: {
+    top: number;
+    right: number;
+    bottom: number;
+    left: number;
+  };
+  width: number;
+  height: number;
+  colors: string[];
+  shadedSegments: {
+    startAxis: number;
+    endAxis: number;
+    color: string;
+    opacity: number;
+  }[];
+}
 interface InitializeSeriesColorsParams {
-  data: any[];
+  data: Record<string, any>[];
   seriesKey: string;
   seriesColorMap: Map<string, string>;
   customColorScale: string[];
@@ -9,10 +36,10 @@ interface InitializeSeriesColorsParams {
 
 interface DrawHeatPointParams {
   svg: d3.Selection<SVGGElement, unknown, null, undefined>;
-  data: Map<any, any[]>;
+  data: Map<any, Record<string, any>[]>;
   rScale: d3.ScaleLinear<number, number>;
   angleSlice: number;
-  config: any;
+  config: RadarConfig;
   color: (key: string) => string;
   selectedSeries: Set<string>;
 }
@@ -24,7 +51,7 @@ interface InitializeSVGParams {
 }
 
 interface CalculateAngleSliceParams {
-  data: Map<any, any[]>;
+  data: Map<any, Record<string, any>[]>;
 }
 
 interface InitializeScaleParams {
@@ -38,55 +65,66 @@ interface DrawGridParams {
 
 interface DrawAxisParams {
   svg: d3.Selection<SVGGElement, unknown, null, undefined>;
-  data: Map<any, any[]>;
+  data: Map<any, Record<string, any>[]>;
   rScale: d3.ScaleLinear<number, number>;
   angleSlice: number;
-  config: any;
+  config: RadarConfig;
 }
 
 interface DrawRadarAreasParams {
   svg: d3.Selection<SVGGElement, unknown, null, undefined>;
-  data: Map<any, any[]>;
+  data: Map<any, Record<string, any>[]>;
   rScale: d3.ScaleLinear<number, number>;
   angleSlice: number;
   initialLoad: boolean;
   seriesColorMap: Map<string, string>;
-  config: any;
+  config: RadarConfig;
 }
 
 interface DrawRadarLinesParams {
   svg: d3.Selection<SVGGElement, unknown, null, undefined>;
-  data: Map<any, any[]>;
+  data: Map<any, Record<string, any>[]>;
   rScale: d3.ScaleLinear<number, number>;
   angleSlice: number;
   initialLoad: boolean;
   seriesColorMap: Map<string, string>;
-  config: any;
+  config: RadarConfig;
 }
 
 interface DrawRadarPointsParams {
   svg: d3.Selection<SVGGElement, unknown, null, undefined>;
-  data: Map<any, any[]>;
+  data: Map<any, Record<string, any>[]>;
   rScale: d3.ScaleLinear<number, number>;
   angleSlice: number;
   initialLoad: boolean;
   seriesColorMap: Map<string, string>;
   show: { [key: string]: boolean };
-  config: any;
+  config: RadarConfig;
 }
 
 interface ShadeSegmentParams {
   svg: d3.Selection<SVGGElement, unknown, null, undefined>;
   rScale: d3.ScaleLinear<number, number>;
   angleSlice: number;
-  shadedSegment: any;
+  shadedSegment: {
+    startAxis: number;
+    endAxis: number;
+    color: string;
+    opacity: number;
+  };
 }
 
 interface ShadeSegmentsParams {
   svg: d3.Selection<SVGGElement, unknown, null, undefined>;
   rScale: d3.ScaleLinear<number, number>;
   angleSlice: number;
-  shadedSegments: any[];
+  shadedSegments: {
+    startAxis: number;
+    endAxis: number;
+    color: string;
+    opacity: number;
+  }[];
+  config: RadarConfig;
 }
 
 interface AddTogglesParams {
@@ -105,7 +143,7 @@ interface ToggleItemParams {
 
 interface AddLegendParams {
   svg: d3.Selection<SVGGElement, unknown, null, undefined>;
-  data: any[];
+  data: Record<string, any>[];
   width: number;
   color: (key: string) => string;
   selectedSeries: Set<string>;
@@ -115,7 +153,7 @@ interface AddLegendParams {
 
 interface LegendItemParams {
   legend: d3.Selection<SVGGElement, unknown, null, undefined>;
-  series: any;
+  series: Record<string, any>;
   index: number;
   color: (key: string) => string;
   selectedSeries: Set<string>;
@@ -129,20 +167,25 @@ interface AddAnnotationsParams {
 }
 
 interface InitializeShowParams {
-  config: any;
+  config: RadarConfig;
 }
 
 interface InitializeRadarElementsParams {
   svg: d3.Selection<SVGGElement, unknown, null, undefined>;
-  filteredData: Map<any, any[]>;
+  filteredData: Map<any, Record<string, any>[]>;
   rScale: d3.ScaleLinear<number, number>;
   angleSlice: number;
   initialLoad: boolean;
   seriesColorMap: Map<string, string>;
-  config: any;
+  config: RadarConfig;
   show: { [key: string]: boolean };
-  allData: Map<any, any[]>;
-  shadedSegments: any[];
+  allData: Map<any, Record<string, any>[]>;
+  shadedSegments: {
+    startAxis: number;
+    endAxis: number;
+    color: string;
+    opacity: number;
+  }[];
   radius: number;
 }
 
@@ -525,14 +568,14 @@ export function shadeSegments({
   svg,
   rScale,
   angleSlice,
-  shadedSegments,
+  config,
 }: ShadeSegmentsParams): void {
-  if (!Array.isArray(shadedSegments)) {
-    console.error("shadedSegments is not an array");
+  if (!Array.isArray(config.shadedSegments)) {
+    console.error("hadedSegments is not an array");
     return;
   }
 
-  shadedSegments.forEach((segment: any) =>
+  config.shadedSegments.forEach((segment: any) =>
     shadeSegment({ svg, rScale, angleSlice, shadedSegment: segment })
   );
 }
@@ -812,7 +855,6 @@ export function initializeRadarElements({
   config,
   show,
   allData,
-  shadedSegments,
   radius,
 }: InitializeRadarElementsParams): void {
   if (show.areas)
@@ -836,7 +878,7 @@ export function initializeRadarElements({
       config,
     });
   if (show.shadedSegments)
-    shadeSegments({ svg, rScale, angleSlice, shadedSegments });
+    shadeSegments({ svg, rScale, angleSlice, config });
   if (show.grid) drawGrid({ svg, radius });
   if (show.axis)
     drawAxis({ svg, data: filteredData, rScale, angleSlice, config });

@@ -1,8 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import * as d3 from "d3";
-  import TimelineVanilla from "./TimelineVanilla.svelte";
-  import Timeline from "./Timeline.svelte";
   import {
     initializeSeriesColors,
     initializeSVG,
@@ -19,12 +17,10 @@
   export let allData: any[] = [];
 
   let show = initializeShow({ config });
-
   let nestedData;
   let color = d3.scaleOrdinal(config.colors);
   let selectedSeries = new Set(data.map((d) => d[config.seriesKey]));
   let seriesColorMap = new Map();
-
   let series = Array.from(new Set(data.map((d) => d[config.seriesKey])));
 
   onMount(() => {
@@ -88,23 +84,8 @@
     const rScale = initializeScale({ radius });
 
     const filteredData = Array.from(data.entries())
-      .filter(([key, values]) => selectedSeries.has(key))
+      .filter(([key]) => selectedSeries.has(key))
       .reduce((acc, [key, values]) => acc.set(key, values), new Map());
-
-    const shadedSegments = [
-      {
-        startAxis: 2.5,
-        endAxis: 3.5,
-        color: "white",
-        opacity: 1,
-      },
-      {
-        startAxis: 5.5,
-        endAxis: 6.5,
-        color: "white",
-        opacity: 1,
-      },
-    ];
 
     initializeRadarElements({
       svg,
@@ -116,20 +97,27 @@
       config,
       show,
       allData,
-      shadedSegments,
+      shadedSegments: config,
       radius,
     });
 
     const legendContainer = d3.select("#legend");
     legendContainer.selectAll("*").remove();
 
-    const legendSvg = legendContainer
+    const legendBase = legendContainer
       .append("svg")
       .attr("width", 200)
       .attr("height", series.length * 25 + Object.keys(show).length * 25);
 
+    const legendSvg = legendBase.append("g").attr("class", "legend");
+
+    const togglesSvg = legendSvg
+      .append("g")
+      .attr("class", "toggles")
+      .attr("transform", `translate(0, ${series.length * 25})`);
+
     addLegend({
-      svg: legendSvg.append("g").attr("class", "legend"),
+      svg: legendSvg,
       data: series.map((key) => ({
         [config.nKey]: key,
       })),
@@ -141,10 +129,7 @@
     });
 
     addToggles({
-      svg: legendSvg
-        .append("g")
-        .attr("class", "toggles")
-        .attr("transform", `translate(0, ${series.length * 25})`),
+      svg: togglesSvg,
       show,
       toggleShow,
     });
