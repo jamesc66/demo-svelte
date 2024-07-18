@@ -11,6 +11,7 @@
     addLegend,
     addToggles,
     type RadarConfig,
+    initializeControls,
   } from "./splitRadar";
 
   export let config: RadarConfig;
@@ -20,7 +21,6 @@
   let show = initializeShow({ config });
   let nestedData: Map<any, Record<string, any>[]>;
   let nestedAllData: Map<any, Record<string, any>[]>;
-  let color = d3.scaleOrdinal(config.colors);
   let selectedSeries = new Set(data.map((d) => d[config.seriesKey]));
   let seriesColorMap = new Map<string, string>();
   let series = Array.from(new Set(data.map((d) => d[config.seriesKey])));
@@ -117,20 +117,14 @@
     >;
     legendContainer.selectAll("*").remove();
 
-    const legendBase = legendContainer
-      .append("svg")
-      .attr("width", 200)
-      .attr("height", series.length * 25 + Object.keys(show).length * 25);
-
-    const legendSvg = legendBase.append("g").attr("class", "legend");
-
-    const togglesSvg = legendSvg
-      .append("g")
-      .attr("class", "toggles")
-      .attr("transform", `translate(0, ${series.length * 25})`);
+    const { legend, toggles } = initializeControls({
+      legendContainer,
+      series,
+      show,
+    });
 
     addLegend({
-      svg: legendSvg,
+      svg: legend,
       data: series.map((key) => ({
         [config.nKey]: key,
       })),
@@ -142,7 +136,7 @@
     });
 
     addToggles({
-      svg: togglesSvg,
+      svg: toggles,
       show,
       toggleShow,
     });

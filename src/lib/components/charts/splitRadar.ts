@@ -635,6 +635,33 @@ export function toggleItem({
     .text(option);
 }
 
+export function initializeControls({
+  legendContainer,
+  series,
+  show,
+}: {
+  legendContainer: d3.Selection<SVGGElement, unknown, null, undefined>;
+  series: Record<string, any>[];
+  show: { [key: string]: boolean };
+
+}): any {
+  const legendBase = legendContainer
+  .append("svg")
+  .attr("width", 200)
+  .attr("height", series.length * 25 + Object.keys(show).length * 25);
+
+const legend = legendBase.append("g").attr("class", "legend");
+
+const toggles = legend
+  .append("g")
+  .attr("class", "toggles")
+  .attr("transform", `translate(0, ${series.length * 25})`);
+  return {
+    legend,
+    toggles,
+  };
+}
+
 export function addLegend({
   svg,
   data,
