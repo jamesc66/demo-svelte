@@ -27,7 +27,7 @@
     <Xy {config} {data} />
   {:else if config.variant === "radar"}
     <Radar {config} data={selectedData?.[config.dataKey]} allData={data} />
-    <TimelineVanilla {data} on:dateSelected={handleDateSelected} />
+    <Timeline {data} on:dateSelected={handleDateSelected} />
   {:else if config.variant === "split-radar"}
     <SplitRadar
       {config}

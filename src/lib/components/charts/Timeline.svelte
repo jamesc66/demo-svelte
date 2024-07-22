@@ -1,11 +1,9 @@
 <script lang="ts">
   import { onMount, onDestroy, createEventDispatcher } from "svelte";
-  import { tweened } from "svelte/motion";
-  import { cubicOut } from "svelte/easing";
   import ResizeObserver from "resize-observer-polyfill";
   import {
     updatePlayPauseButton,
-    handleDrag as importedHandleDrag,
+    handleDrag,
     handleDragEnd,
     updateSliderWidth,
     startAutoSlide,
@@ -13,42 +11,56 @@
     initializeTimeline,
     type TimelineData,
   } from "./timeline";
+  import * as d3 from "d3";
 
-  // Change the type of data to be an array of TimelineData
   export let data: TimelineData[];
   export let speed: number = 5;
 
   const dispatch = createEventDispatcher();
-  const position = tweened(0, { duration: 300, easing: cubicOut });
+  const selectDate = (type: string, detail: any) => {
+    dispatch(type, detail);
+  };
 
   let timeline: HTMLDivElement | null = null;
   let sliderWidth: number = 0;
   let isPlaying: boolean = false;
-  let animationFrameRef = { current: 0 }; // Reference object to hold the animation frame
+  let animationFrameRef = { current: 0 };
   let resizeObserver: ResizeObserver;
   const handleRadius: number = 5;
+  let position: number = 0;
 
   onMount(() => {
     initializeTimeline({
       timeline,
-      data, // Pass data directly
-      position: {
-        set: (value: number) => position.set(value),
-        subscribe: position.subscribe,
-      },
+      data,
       handleRadius,
       sliderWidth,
       isPlaying,
       togglePlay,
       rewind: () =>
         rewind({
-          positionSetter: (value: number) => position.set(value),
+          positionSetter: (value: number) => (position = value),
           data,
-          dispatch,
+          selectDate,
         }),
-      dispatch,
+      selectDate,
       speed,
-      handleDrag: (params) => handleDrag(params),
+      handleDrag: (event) =>
+        handleDrag(
+          event,
+          handleRadius,
+          sliderWidth,
+          (value) => {
+            position = value;
+            if (timeline) {
+              d3.select(timeline)
+                .select("circle")
+                .attr("cx", position + handleRadius);
+            }
+          },
+          data,
+          selectDate
+        ),
       handleDragEnd,
     });
 
@@ -57,6 +69,7 @@
         updateSliderWidth({ timeline, handleRadius, setSliderWidth });
       }
     });
+
     if (timeline) {
       resizeObserver.observe(timeline);
     }
@@ -66,29 +79,40 @@
     resizeObserver.disconnect();
     cancelAnimationFrame(animationFrameRef.current);
   });
-
   function setSliderWidth(width: number): void {
+    console.log("Setting slider width:", width); // Debugging
     sliderWidth = width;
     initializeTimeline({
       timeline,
-      data, // Pass data directly
-      position: {
-        set: (value: number) => position.set(value),
-        subscribe: position.subscribe,
-      },
+      data,
       handleRadius,
       sliderWidth,
       isPlaying,
       togglePlay,
       rewind: () =>
         rewind({
-          positionSetter: (value: number) => position.set(value),
+          positionSetter: (value: number) => (position = value),
           data,
-          dispatch,
+          selectDate,
         }),
-      dispatch,
+      selectDate,
       speed,
-      handleDrag: (params) => handleDrag(params),
+      handleDrag: (event) =>
+        handleDrag(
+          event,
+          handleRadius,
+          sliderWidth,
+          (value) => {
+            position = value;
+            if (timeline) {
+              d3.select(timeline)
+                .select("circle")
+                .attr("cx", position + handleRadius);
+            }
+          },
+          data,
+          selectDate
+        ),
       handleDragEnd,
     });
   }
@@ -97,18 +121,12 @@
     isPlaying = !isPlaying;
     if (isPlaying) {
       startAutoSlide({
-        data, // Pass data directly
-        positionSetter: (value: number) => position.set(value),
-        positionGetter: () => {
-          let currentXPos: number = 0;
-          position.subscribe((value: number) => {
-            currentXPos = value;
-          })();
-          return currentXPos;
-        },
+        data,
+        positionSetter: (value: number) => (position = value),
+        positionGetter: () => position,
         sliderWidth,
         speed,
-        dispatch,
+        selectDate,
         setPlayingState: (playing: boolean) => {
           isPlaying = playing;
         },
@@ -120,17 +138,6 @@
     if (timeline) {
       updatePlayPauseButton({ timeline, isPlaying });
     }
-  }
-
-  function handleDrag(event: any): void {
-    importedHandleDrag({
-      event,
-      handleRadius,
-      sliderWidth,
-      position,
-      data, // Pass data directly
-      dispatch,
-    });
   }
 </script>
 
