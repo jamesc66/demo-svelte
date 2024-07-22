@@ -82,7 +82,7 @@ export function createSlider(params: {
     params;
   const svg = container
     .append<SVGSVGElement>("svg")
-    .attr("width", "100%")
+    .attr("width", sliderWidth + handleRadius * 2)
     .attr("height", 40);
   svg
     .append("line")
@@ -92,7 +92,7 @@ export function createSlider(params: {
     .attr("y2", 20)
     .attr("stroke", "lightgray")
     .attr("stroke-width", 2);
-  const handle = svg
+  svg
     .append<SVGCircleElement>("circle")
     .attr("cx", handleRadius)
     .attr("cy", 20)
@@ -106,7 +106,6 @@ export function createSlider(params: {
         .on("drag", handleDrag)
         .on("end", handleDragEnd)
     );
-  params["handle"] = handle;
 }
 
 export function createRewindButton(params: {

@@ -66,7 +66,12 @@
 
     resizeObserver = new ResizeObserver(() => {
       if (timeline) {
-        updateSliderWidth({ timeline, handleRadius, setSliderWidth });
+        updateSliderWidth({
+          sliderWidth,
+          timeline,
+          handleRadius,
+          setSliderWidth,
+        });
       }
     });
 
