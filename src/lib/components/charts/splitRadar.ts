@@ -1,40 +1,6 @@
 import * as d3 from "d3";
 
-export interface RadarConfig {
-  variant: string;
-  nKey: string;
-  xKey: string;
-  yKey: string;
-  dataKey: string;
-  timeKey: string;
-  seriesKey: string;
-  show: string[];
-  togle: boolean;
-  defaultFeatures: string[];
-  margin: {
-    top: number;
-    right: number;
-    bottom: number;
-    left: number;
-  };
-  width: number;
-  height: number;
-  colors: string[];
-  shadedSegments: {
-    startAxis: number;
-    endAxis: number;
-    color: string;
-    opacity: number;
-  }[];
-}
-
-export interface InitializeSeriesColorsParams {
-  data: Record<string, any>[];
-  seriesKey: string;
-  seriesColorMap: Map<string, string>;
-  customColorScale: string[];
-}
-
+// Exportable Interfaces
 export interface DrawHeatPointParams {
   svg: d3.Selection<SVGGElement, unknown, null, undefined>;
   data: Map<any, Record<string, any>[]>;
@@ -49,6 +15,7 @@ export interface InitializeSVGParams {
   margin: { top: number; right: number; bottom: number; left: number };
   width: number;
   height: number;
+  element: HTMLElement;
 }
 
 export interface CalculateAngleSliceParams {
@@ -143,7 +110,7 @@ export interface ToggleItemParams {
 }
 
 export interface AddLegendParams {
-  svg: d3.Selection<SVGGElement, unknown, null,  undefined>;
+  svg: d3.Selection<SVGGElement, unknown, null, undefined>;
   data: Record<string, any>[];
   width: number;
   color: (key: string) => string;
@@ -190,6 +157,42 @@ export interface InitializeRadarElementsParams {
   radius: number;
 }
 
+export interface RadarConfig {
+  variant: string;
+  nKey: string;
+  xKey: string;
+  yKey: string;
+  dataKey: string;
+  timeKey: string;
+  seriesKey: string;
+  show: string[];
+  toggle: boolean;
+  defaultFeatures: string[];
+  margin: {
+    top: number;
+    right: number;
+    bottom: number;
+    left: number;
+  };
+  width: number;
+  height: number;
+  colors: string[];
+  shadedSegments: {
+    startAxis: number;
+    endAxis: number;
+    color: string;
+    opacity: number;
+  }[];
+}
+
+export interface InitializeSeriesColorsParams {
+  data: Record<string, any>[];
+  seriesKey: string;
+  seriesColorMap: Map<string, string>;
+  customColorScale: string[];
+}
+
+// Functions
 export function initializeSeriesColors({
   data,
   seriesKey,
@@ -463,21 +466,21 @@ export function drawRadarPoints({
       .style("stroke", seriesColorMap.get(key) as string)
       .style("stroke-width", 1)
       .on("mouseover", function (event: any, d: any) {
-        if (show.tooltip) {
+        if (show['tooltip']) {
           d3.select(".tooltip")
             .style("opacity", 0.9)
             .html(`Insight: ${d[config.xKey]}<br>Value: ${d[config.yKey]}`);
         }
       })
       .on("mousemove", function (event: any) {
-        if (show.tooltip) {
+        if (show['tooltip']) {
           d3.select(".tooltip")
             .style("left", `${event.pageX + 10}px`)
             .style("top", `${event.pageY + 10}px`);
         }
       })
       .on("mouseout", function () {
-        if (show.tooltip) {
+        if (show['tooltip']) {
           d3.select(".tooltip").style("opacity", 0);
         }
       });
@@ -502,21 +505,21 @@ export function drawRadarPoints({
       .style("fill", "none")
       .style("pointer-events", "all")
       .on("mouseover", function (event: any, d: any) {
-        if (show.tooltip) {
+        if (show['tooltip']) {
           d3.select(".tooltip")
             .style("opacity", 0.9)
             .html(`Insight: ${d[config.xKey]}<br>Value: ${d[config.yKey]}`);
         }
       })
       .on("mousemove", function (event: any) {
-        if (show.tooltip) {
+        if (show['tooltip']) {
           d3.select(".tooltip")
             .style("left", `${event.pageX + 10}px`)
             .style("top", `${event.pageY + 10}px`);
         }
       })
       .on("mouseout", function () {
-        if (show.tooltip) {
+        if (show['tooltip']) {
           d3.select(".tooltip").style("opacity", 0);
         }
       });
@@ -640,7 +643,7 @@ export function initializeControls({
   series,
   show,
 }: {
-  legendContainer: d3.Selection<SVGGElement, unknown, null, undefined>;
+  legendContainer: d3.Selection<SVGGElement, unknown, null, undefined> | any;
   series: Record<string, any>[];
   show: { [key: string]: boolean };
 
@@ -661,6 +664,7 @@ const toggles = legend
     toggles,
   };
 }
+
 
 export function addLegend({
   svg,
@@ -848,14 +852,14 @@ export function initializeShow({
 }: InitializeShowParams): { [key: string]: boolean } {
   const defaultFeatures = config.defaultFeatures || [];
   const features = [
-    "grid",
-    "axis",
-    "areas",
-    "lines",
-    "points",
-    "heat",
-    "shadedSegments",
-    "annotations",
+    'grid',
+    'axis',
+    'areas',
+    'lines',
+    'points',
+    'heat',
+    'shadedSegments',
+    'annotations',
   ];
 
   const show: { [key: string]: boolean } = {};
@@ -881,7 +885,7 @@ export function initializeRadarElements({
   allData,
   radius,
 }: InitializeRadarElementsParams): void {
-  if (show.areas) {
+  if (show['areas']) {
     drawRadarAreas({
       svg,
       data: filteredData,
@@ -892,7 +896,7 @@ export function initializeRadarElements({
       config,
     });
   }
-  if (show.lines) {
+  if (show['lines']) {
     drawRadarLines({
       svg,
       data: filteredData,
@@ -903,7 +907,7 @@ export function initializeRadarElements({
       config,
     });
   }
-  if (show.shadedSegments) {
+  if (show['shadedSegments']) {
     shadeSegments({
       svg,
       rScale,
@@ -912,10 +916,10 @@ export function initializeRadarElements({
       config,
     });
   }
-  if (show.grid) {
+  if (show['grid']) {
     drawGrid({ svg, radius });
   }
-  if (show.axis) {
+  if (show['axis']) {
     drawAxis({
       svg,
       data: filteredData,
@@ -924,10 +928,10 @@ export function initializeRadarElements({
       config,
     });
   }
-  if (show.tooltip) {
+  if (show['tooltip']) {
     addTooltip();
   }
-  if (show.heat) {
+  if (show['heat']) {
     drawHeatPoint({
       svg,
       data: allData,
@@ -938,7 +942,7 @@ export function initializeRadarElements({
       selectedSeries: new Set(Array.from(seriesColorMap.keys())),
     });
   }
-  if (show.points) {
+  if (show['points']) {
     drawRadarPoints({
       svg,
       data: filteredData,
@@ -950,7 +954,7 @@ export function initializeRadarElements({
       config,
     });
   }
-  if (show.annotations) {
+  if (show['annotations']) {
     addAnnotations({ svg, radius });
   }
 }

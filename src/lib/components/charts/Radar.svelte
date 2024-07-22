@@ -26,6 +26,7 @@
   let series = Array.from(new Set(data.map((d) => d[config.seriesKey])));
 
   onMount(() => {
+    console.log("data", data);
     nestedData = d3.group(data, (d) => d[config.nKey]);
     nestedAllData = d3.group(allData, (d) => d[config.nKey]);
     initializeSeriesColors({
@@ -83,11 +84,17 @@
     const height = config.height - margin.top - margin.bottom;
     const radius = Math.min(width, height) / 2;
 
+    const radarChartElement = document.getElementById("radarChart");
+
+    if (!radarChartElement) return;
+
     const svg = initializeSVG({
       margin,
       width,
       height,
+      element: radarChartElement,
     }) as unknown as d3.Selection<SVGGElement, unknown, null, undefined>;
+
     const angleSlice = calculateAngleSlice({ data });
     const rScale = initializeScale({ radius });
 
@@ -106,7 +113,7 @@
       show,
       allData,
       radius,
-      shadedSegments: config.shadedSegments, // Ensure shadedSegments is included
+      shadedSegments: config.shadedSegments,
     });
 
     const legendContainer = d3.select("#legend") as d3.Selection<

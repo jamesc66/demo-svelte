@@ -1,19 +1,158 @@
+// timeline.ts
 import * as d3 from "d3";
 
-export function createPlayPauseButton(container, isPlaying, togglePlay) {
+export interface Position {
+  subscribe(callback: (value: number) => void): void;
+  set(value: number): void;
+}
+
+export interface TimelineData {
+  date: string;
+  insight: Insight[];
+}
+
+export interface Insight {
+  room: string;
+  insight: string;
+  value: number;
+}
+
+export type DispatchFunction = (type: string, detail?: any) => void;
+
+export interface InitD3TimelineParams {
+  timeline: HTMLDivElement | null;
+  data: TimelineData[];
+  position: Position;
+  handleRadius: number;
+  sliderWidth: number;
+  isPlaying: boolean;
+  togglePlay: () => void;
+  rewind: () => void;
+  dispatch: DispatchFunction;
+  speed: number;
+  handleDrag: (params: HandleDragParams) => void;
+  handleDragEnd: () => void;
+}
+
+// Export all other necessary interfaces and functions as well
+
+export interface HandleDragParams {
+  event: any;
+  handleRadius: number;
+  sliderWidth: number;
+  position: Position;
+  data: TimelineData[];
+  dispatch: DispatchFunction;
+}
+
+export interface CreatePlayPauseButtonParams {
+  container: d3.Selection<HTMLDivElement, unknown, null, undefined>;
+  isPlaying: boolean;
+  togglePlay: () => void;
+}
+
+export interface CreatePlayPauseRectsParams {
+  svg: d3.Selection<SVGSVGElement, unknown, null, undefined>;
+  isPlaying: boolean;
+}
+
+export interface CreatePlayPausePolygonParams {
+  svg: d3.Selection<SVGSVGElement, unknown, null, undefined>;
+  isPlaying: boolean;
+}
+
+export interface CreateSliderParams {
+  container: d3.Selection<HTMLDivElement, unknown, null, undefined>;
+  handleRadius: number;
+  sliderWidth: number;
+  position: Position;
+  handleDrag: (params: HandleDragParams) => void;
+  handleDragEnd: () => void;
+}
+
+export interface CreateSliderLineParams {
+  svg: d3.Selection<SVGSVGElement, unknown, null, undefined>;
+  handleRadius: number;
+  sliderWidth: number;
+}
+
+export interface CreateSliderHandleParams {
+  svg: d3.Selection<SVGSVGElement, unknown, null, undefined>;
+  handleRadius: number;
+  position: Position;
+  handleDrag: (params: HandleDragParams) => void;
+  handleDragEnd: () => void;
+}
+
+export interface CreateRewindButtonParams {
+  container: d3.Selection<HTMLDivElement, unknown, null, undefined>;
+  rewind: () => void;
+}
+
+export interface CreateNumOfDaysTextParams {
+  container: d3.Selection<HTMLDivElement, unknown, null, undefined>;
+  numOfDays: number;
+}
+
+export interface UpdatePlayPauseButtonParams {
+  timeline: HTMLElement;
+  isPlaying: boolean;
+}
+
+export interface UpdateNumOfDaysTextParams {
+  timeline: HTMLElement;
+  numOfDays: number;
+}
+
+export interface UpdateSliderWidthParams {
+  timeline: HTMLElement;
+  handleRadius: number;
+  setSliderWidth: (width: number) => void;
+}
+
+export interface StartAutoSlideParams {
+  data: TimelineData[];
+  positionSetter: (value: number) => void;
+  positionGetter: () => number;
+  sliderWidth: number;
+  speed: number;
+  dispatch: DispatchFunction;
+  setPlayingState: (playing: boolean) => void;
+  animationFrameRef: { current: number };
+}
+
+export interface RewindParams {
+  positionSetter: (value: number) => void;
+  data: TimelineData[];
+  dispatch: DispatchFunction;
+}
+
+// Utility function to calculate number of days
+export function calculateNumOfDays(data: TimelineData[]): number {
+  const startDate = new Date(data[0].date);
+  const endDate = new Date(data[data.length - 1].date);
+  return Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+// Create play/pause button
+export function createPlayPauseButton(params: CreatePlayPauseButtonParams): void {
+  const { container, isPlaying, togglePlay } = params;
+
   const playPauseButton = container
-    .append("svg")
+    .append<SVGSVGElement>("svg")
     .attr("width", 30)
     .attr("height", 40)
     .style("cursor", "pointer")
     .style("margin-right", "10px")
     .on("click", () => togglePlay());
 
-  createPlayPauseRects(playPauseButton, isPlaying);
-  createPlayPausePolygon(playPauseButton, isPlaying);
+  createPlayPauseRects({ svg: playPauseButton, isPlaying });
+  createPlayPausePolygon({ svg: playPauseButton, isPlaying });
 }
 
-export function createPlayPauseRects(svg, isPlaying) {
+export function createPlayPauseRects(params: CreatePlayPauseRectsParams): void {
+  const { svg, isPlaying } = params;
+
   svg
     .append("rect")
     .attr("x", 8)
@@ -33,7 +172,9 @@ export function createPlayPauseRects(svg, isPlaying) {
     .attr("display", isPlaying ? "block" : "none");
 }
 
-export function createPlayPausePolygon(svg, isPlaying) {
+export function createPlayPausePolygon(params: CreatePlayPausePolygonParams): void {
+  const { svg, isPlaying } = params;
+
   svg
     .append("polygon")
     .attr("points", "10,5 10,35 25,20")
@@ -41,14 +182,19 @@ export function createPlayPausePolygon(svg, isPlaying) {
     .attr("display", isPlaying ? "none" : "block");
 }
 
-export function createSlider(container, handleRadius, sliderWidth, position, handleDrag, handleDragEnd) {
-  const svg = container.append("svg").attr("width", "100%").attr("height", 40);
+// Create slider
+export function createSlider(params: CreateSliderParams): void {
+  const { container, handleRadius, sliderWidth, position, handleDrag, handleDragEnd } = params;
 
-  createSliderLine(svg, handleRadius, sliderWidth);
-  createSliderHandle(svg, handleRadius, position, handleDrag, handleDragEnd);
+  const svg = container.append<SVGSVGElement>("svg").attr("width", "100%").attr("height", 40);
+
+  createSliderLine({ svg, handleRadius, sliderWidth });
+  createSliderHandle({ svg, handleRadius, position, handleDrag, handleDragEnd });
 }
 
-export function createSliderLine(svg, handleRadius, sliderWidth) {
+export function createSliderLine(params: CreateSliderLineParams): void {
+  const { svg, handleRadius, sliderWidth } = params;
+
   svg
     .append("line")
     .attr("x1", handleRadius)
@@ -59,9 +205,11 @@ export function createSliderLine(svg, handleRadius, sliderWidth) {
     .attr("stroke-width", 2);
 }
 
-export function createSliderHandle(svg, handleRadius, position, handleDrag, handleDragEnd) {
+export function createSliderHandle(params: CreateSliderHandleParams): void {
+  const { svg, handleRadius, position, handleDrag, handleDragEnd } = params;
+
   const handle = svg
-    .append("circle")
+    .append<SVGCircleElement>("circle")
     .attr("cx", handleRadius)
     .attr("cy", 20)
     .attr("r", handleRadius)
@@ -70,35 +218,41 @@ export function createSliderHandle(svg, handleRadius, position, handleDrag, hand
     .attr("stroke-width", 2)
     .call(
       d3
-        .drag()
-        .on("start", event => handleDrag(event, handleRadius, svg.attr("width"), position))
-        .on("drag", event => handleDrag(event, handleRadius, svg.attr("width"), position))
+        .drag<SVGCircleElement, unknown>()
+        .on("start", event => handleDrag({ event, handleRadius, sliderWidth: +svg.attr("width"), position, data: [], dispatch: () => {} }))
+        .on("drag", event => handleDrag({ event, handleRadius, sliderWidth: +svg.attr("width"), position, data: [], dispatch: () => {} }))
         .on("end", handleDragEnd)
     );
 
-  position.subscribe((value) => {
+  position.subscribe(value => {
     handle.attr("cx", value + handleRadius);
   });
 }
 
-export function createRewindButton(container, rewind) {
+// Create rewind button
+export function createRewindButton(params: CreateRewindButtonParams): void {
+  const { container, rewind } = params;
+
   const rewindButton = container
-    .append("svg")
+    .append<SVGSVGElement>("svg")
     .attr("width", 30)
     .attr("height", 40)
     .style("cursor", "pointer")
     .style("margin-left", "10px")
-    .on("click", () => rewind());
+    .on("click", rewind);
 
   rewindButton
-    .append("polygon")
+    .append<SVGPolygonElement>("polygon")
     .attr("points", "20,5 20,35 5,20")
     .attr("fill", "#7597C9");
 }
 
-export function createNumOfDaysText(container, numOfDays) {
+// Create number of days text
+export function createNumOfDaysText(params: CreateNumOfDaysTextParams): void {
+  const { container, numOfDays } = params;
+
   container
-    .append("div")
+    .append<HTMLDivElement>("div")
     .attr("class", "num-of-days-text")
     .style("text-align", "center")
     .style("margin-top", "10px")
@@ -106,81 +260,65 @@ export function createNumOfDaysText(container, numOfDays) {
     .text(`Last ${numOfDays} days`);
 }
 
-export function initD3Timeline(
-  timeline,
-  data,
-  position,
-  handleRadius,
-  sliderWidth,
-  isPlaying,
-  togglePlay,
-  rewind,
-  dispatch,
-  speed,
-  handleDrag,
-  handleDragEnd
-) {
+// Initialize D3 Timeline
+export function initD3Timeline(params: InitD3TimelineParams): void {
+  const { timeline, data, position, handleRadius, sliderWidth, isPlaying, togglePlay, rewind, dispatch, speed, handleDrag, handleDragEnd } = params;
+
   if (!timeline) return;
 
   d3.select(timeline).selectAll("*").remove();
 
   const container = d3
-    .select(timeline)
+    .select<HTMLDivElement, unknown>(timeline)
     .style("display", "flex")
     .style("flex-direction", "column")
     .style("align-items", "center");
 
   const controlsContainer = container
-    .append("div")
+    .append<HTMLDivElement>("div")
     .style("display", "flex")
     .style("align-items", "center");
 
-  createPlayPauseButton(controlsContainer, isPlaying, togglePlay);
-  createSlider(
-    controlsContainer,
+  createPlayPauseButton({ container: controlsContainer, isPlaying, togglePlay });
+  createSlider({
+    container: controlsContainer,
     handleRadius,
     sliderWidth,
     position,
-    (event) => handleDrag(event, handleRadius, sliderWidth, position, data, dispatch),
+    handleDrag: (eventParams: HandleDragParams) => handleDrag({ ...eventParams, data, dispatch }),
     handleDragEnd
-  );
-  createRewindButton(controlsContainer, () =>
-    rewind(position, data, dispatch)
-  );
-  createNumOfDaysText(container, calculateNumOfDays(data));
+  });
+  createRewindButton({ container: controlsContainer, rewind });
+  createNumOfDaysText({ container, numOfDays: calculateNumOfDays(data) });
 }
 
-export function updatePlayPauseButton(timeline, isPlaying) {
+// Update play/pause button state
+export function updatePlayPauseButton(params: UpdatePlayPauseButtonParams): void {
+  const { timeline, isPlaying } = params;
+
   d3.select(timeline)
     .select("svg:nth-child(1)")
-    .selectAll("rect")
+    .selectAll<SVGRectElement, unknown>("rect")
     .attr("display", isPlaying ? "block" : "none");
   d3.select(timeline)
     .select("svg:nth-child(1)")
-    .selectAll("polygon")
+    .selectAll<SVGPolygonElement, unknown>("polygon")
     .attr("display", isPlaying ? "none" : "block");
 }
 
-export function calculateNumOfDays(data) {
-  const startDate = new Date(data[0].date);
-  const endDate = new Date(data[data.length - 1].date);
-  return Math.round((endDate - startDate) / (1000 * 60 * 60 * 24));
-}
+// Update number of days text
+export function updateNumOfDaysText(params: UpdateNumOfDaysTextParams): void {
+  const { timeline, numOfDays } = params;
 
-export function updateNumOfDaysText(timeline, numOfDays) {
   d3.select(timeline)
-    .select(".num-of-days-text")
+    .select<HTMLDivElement>(".num-of-days-text")
     .text(`Last ${numOfDays} days`);
 }
 
-export function handleDrag(
-  event,
-  handleRadius,
-  sliderWidth,
-  position,
-  data,
-  dispatch
-) {
+// Handle drag events
+export function handleDrag(params: HandleDragParams): void {
+  const { event, handleRadius, sliderWidth, position, data, dispatch } = params;
+
   console.log('handleDrag:', { event, handleRadius, sliderWidth, position, data });
 
   if (!data || data.length === 0) {
@@ -189,8 +327,7 @@ export function handleDrag(
   }
 
   let xPos = event.x - handleRadius;
-  if (xPos < 0) xPos = 0;
-  if (xPos > sliderWidth) xPos = sliderWidth;
+  xPos = Math.max(0, Math.min(xPos, sliderWidth));
 
   position.set(xPos);
 
@@ -209,6 +346,71 @@ export function handleDrag(
   dispatch("dateSelected", closestDate);
 }
 
-export function handleDragEnd() {
+// Handle drag end events
+export function handleDragEnd(): void {
   // Logic for handleDragEnd if needed
+}
+
+// Update slider width
+export function updateSliderWidth(params: UpdateSliderWidthParams): void {
+  const { timeline, handleRadius, setSliderWidth } = params;
+
+  const width = timeline.clientWidth - handleRadius * 2 - 80;
+  setSliderWidth(width);
+}
+
+// Start auto slide
+export function startAutoSlide(params: StartAutoSlideParams): void {
+  const {
+    data,
+    positionSetter,
+    positionGetter,
+    sliderWidth,
+    speed,
+    dispatch,
+    setPlayingState,
+    animationFrameRef,
+  } = params;
+
+  function slide(): void {
+    let currentXPos: number = positionGetter();
+
+    if (currentXPos > sliderWidth) {
+      setPlayingState(false);
+      cancelAnimationFrame(animationFrameRef.current);
+      return;
+    }
+    positionSetter(currentXPos + speed);
+
+    const dateTimestamp =
+      new Date(data[0].date).getTime() +
+      (currentXPos / sliderWidth) *
+        (new Date(data[data.length - 1].date).getTime() -
+          new Date(data[0].date).getTime());
+    const closestDate = data.reduce((prev, curr) => {
+      return Math.abs(new Date(curr.date).getTime() - dateTimestamp) <
+        Math.abs(new Date(prev.date).getTime() - dateTimestamp)
+        ? curr
+        : prev;
+    }).date;
+
+    dispatch("dateSelected", closestDate);
+
+    animationFrameRef.current = requestAnimationFrame(slide);
+  }
+  slide();
+}
+
+// Rewind function
+export function rewind(params: RewindParams): void {
+  const { positionSetter, data, dispatch } = params;
+  positionSetter(0);
+  dispatch("dateSelected", data[0].date);
+}
+
+// Initialize timeline
+export function initializeTimeline(params: InitD3TimelineParams): void {
+  if (params.timeline) {
+    initD3Timeline(params);
+  }
 }

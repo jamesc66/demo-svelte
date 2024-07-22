@@ -4,151 +4,134 @@
   import { cubicOut } from "svelte/easing";
   import ResizeObserver from "resize-observer-polyfill";
   import {
-    initD3Timeline,
     updatePlayPauseButton,
-    handleDrag,
+    handleDrag as importedHandleDrag,
     handleDragEnd,
-    calculateNumOfDays,
+    updateSliderWidth,
+    startAutoSlide,
+    rewind,
+    initializeTimeline,
+    type TimelineData,
   } from "./timeline";
 
-  export let data: {
-    date: string;
-    insight: { room: string; insight: string; value: number }[];
-  }[];
-
-  export let speed = 5; // Speed of the auto slide
+  // Change the type of data to be an array of TimelineData
+  export let data: TimelineData[];
+  export let speed: number = 5;
 
   const dispatch = createEventDispatcher();
   const position = tweened(0, { duration: 300, easing: cubicOut });
 
-  let timeline;
-  let sliderWidth = 0;
-  let numOfDays = 0;
-  let isPlaying = false;
-  let animationFrame;
-  let resizeObserver;
-  let handleRadius = 5;
+  let timeline: HTMLDivElement | null = null;
+  let sliderWidth: number = 0;
+  let isPlaying: boolean = false;
+  let animationFrameRef = { current: 0 }; // Reference object to hold the animation frame
+  let resizeObserver: ResizeObserver;
+  const handleRadius: number = 5;
 
   onMount(() => {
-    numOfDays = calculateNumOfDays(data);
-    resizeObserver = new ResizeObserver(() =>
-      updateSliderWidth(timeline, handleRadius, setSliderWidth)
-    );
-    resizeObserver.observe(timeline);
-    initD3Timeline(
+    initializeTimeline({
       timeline,
-      data,
-      position,
+      data, // Pass data directly
+      position: {
+        set: (value: number) => position.set(value),
+        subscribe: position.subscribe,
+      },
       handleRadius,
       sliderWidth,
       isPlaying,
       togglePlay,
-      rewind,
+      rewind: () =>
+        rewind({
+          positionSetter: (value: number) => position.set(value),
+          data,
+          dispatch,
+        }),
       dispatch,
       speed,
-      handleDrag,
-      handleDragEnd
-    );
+      handleDrag: (params) => handleDrag(params),
+      handleDragEnd,
+    });
+
+    resizeObserver = new ResizeObserver(() => {
+      if (timeline) {
+        updateSliderWidth({ timeline, handleRadius, setSliderWidth });
+      }
+    });
+    if (timeline) {
+      resizeObserver.observe(timeline);
+    }
   });
 
   onDestroy(() => {
     resizeObserver.disconnect();
-    cancelAnimationFrame(animationFrame);
+    cancelAnimationFrame(animationFrameRef.current);
   });
 
-  function setSliderWidth(width) {
+  function setSliderWidth(width: number): void {
     sliderWidth = width;
-    initD3Timeline(
+    initializeTimeline({
       timeline,
-      data,
-      position,
+      data, // Pass data directly
+      position: {
+        set: (value: number) => position.set(value),
+        subscribe: position.subscribe,
+      },
       handleRadius,
       sliderWidth,
       isPlaying,
       togglePlay,
-      rewind,
+      rewind: () =>
+        rewind({
+          positionSetter: (value: number) => position.set(value),
+          data,
+          dispatch,
+        }),
       dispatch,
       speed,
-      handleDrag,
-      handleDragEnd
-    );
+      handleDrag: (params) => handleDrag(params),
+      handleDragEnd,
+    });
   }
 
-  function updateSliderWidth(timeline, handleRadius, setSliderWidth) {
-    if (timeline) {
-      const width = timeline.clientWidth - handleRadius * 2 - 80; // Adjusted for button width
-      setSliderWidth(width);
-    }
-  }
-
-  function togglePlay() {
+  function togglePlay(): void {
     isPlaying = !isPlaying;
     if (isPlaying) {
-      startAutoSlide(
-        data,
-        position,
+      startAutoSlide({
+        data, // Pass data directly
+        positionSetter: (value: number) => position.set(value),
+        positionGetter: () => {
+          let currentXPos: number = 0;
+          position.subscribe((value: number) => {
+            currentXPos = value;
+          })();
+          return currentXPos;
+        },
         sliderWidth,
         speed,
         dispatch,
-        setPlayingState
-      );
+        setPlayingState: (playing: boolean) => {
+          isPlaying = playing;
+        },
+        animationFrameRef,
+      });
     } else {
-      cancelAnimationFrame(animationFrame);
+      cancelAnimationFrame(animationFrameRef.current);
     }
-    updatePlayPauseButton(timeline, isPlaying);
-  }
-
-  function setPlayingState(playing) {
-    isPlaying = playing;
-  }
-
-  function startAutoSlide(
-    data,
-    position,
-    sliderWidth,
-    speed,
-    dispatch,
-    setPlayingState
-  ) {
-    function slide() {
-      let currentXPos;
-      position.subscribe((value) => (currentXPos = value))();
-      if (currentXPos > sliderWidth) {
-        setPlayingState(false);
-        cancelAnimationFrame(animationFrame);
-        return;
-      }
-      position.set(currentXPos + speed);
-
-      const date =
-        new Date(data[0].date).getTime() +
-        (currentXPos / sliderWidth) *
-          (new Date(data[data.length - 1].date).getTime() -
-            new Date(data[0].date).getTime());
-      const closestDate = data.reduce((prev, curr) => {
-        return Math.abs(new Date(curr.date).getTime() - date) <
-          Math.abs(new Date(prev.date).getTime() - date)
-          ? curr
-          : prev;
-      }).date;
-
-      dispatch("dateSelected", closestDate);
-
-      animationFrame = requestAnimationFrame(slide);
+    if (timeline) {
+      updatePlayPauseButton({ timeline, isPlaying });
     }
-    slide();
   }
 
-  function rewind() {
-    position.set(0);
-    dispatch("dateSelected", data[0].date);
+  function handleDrag(event: any): void {
+    importedHandleDrag({
+      event,
+      handleRadius,
+      sliderWidth,
+      position,
+      data, // Pass data directly
+      dispatch,
+    });
   }
 </script>
 
 <div class="timeline" bind:this={timeline}></div>
-
-<style>
-  svg {
-    user-select: none;
-  }
-</style>
