@@ -7,7 +7,7 @@
     handleDragEnd,
     updateSliderWidth,
     startAutoSlide,
-    rewind,
+    rewind as rewindTimeline,
     initializeTimeline,
     type TimelineData,
   } from "./timeline";
@@ -30,53 +30,56 @@
   let position: number = 0;
 
   onMount(() => {
-    initializeTimeline({
-      timeline,
-      data,
-      handleRadius,
-      sliderWidth,
-      isPlaying,
-      togglePlay,
-      rewind: () =>
-        rewind({
-          positionSetter: (value: number) => (position = value),
-          data,
-          selectDate,
-        }),
-      selectDate,
-      speed,
-      handleDrag: (event) =>
-        handleDrag(
-          event,
-          handleRadius,
-          sliderWidth,
-          (value) => {
-            position = value;
-            if (timeline) {
-              d3.select(timeline)
-                .select("circle")
-                .attr("cx", position + handleRadius);
-            }
-          },
-          data,
-          selectDate
-        ),
-      handleDragEnd,
-    });
+    try {
+      initializeTimeline({
+        timeline,
+        data,
+        handleRadius,
+        sliderWidth,
+        isPlaying,
+        togglePlay,
+        rewind: () => {
+          rewindTimeline({
+            positionSetter: (value: number) => {
+              position = value;
+              updateHandlePosition();
+            },
+            data,
+            selectDate,
+          });
+        },
+        selectDate,
+        speed,
+        handleDrag: (event) =>
+          handleDrag(
+            event,
+            handleRadius,
+            sliderWidth,
+            (value) => {
+              position = value;
+              updateHandlePosition();
+            },
+            data,
+            selectDate
+          ),
+        handleDragEnd,
+      });
 
-    resizeObserver = new ResizeObserver(() => {
+      resizeObserver = new ResizeObserver(() => {
+        if (timeline) {
+          updateSliderWidth({
+            timeline,
+            handleRadius,
+            setSliderWidth,
+          });
+        }
+      });
+
       if (timeline) {
-        updateSliderWidth({
-          sliderWidth,
-          timeline,
-          handleRadius,
-          setSliderWidth,
-        });
+        resizeObserver.observe(timeline);
       }
-    });
-
-    if (timeline) {
-      resizeObserver.observe(timeline);
+    } catch (error) {
+      console.error("Error initializing timeline:", error);
     }
   });
 
@@ -84,42 +87,54 @@
     resizeObserver.disconnect();
     cancelAnimationFrame(animationFrameRef.current);
   });
+
   function setSliderWidth(width: number): void {
-    console.log("Setting slider width:", width); // Debugging
     sliderWidth = width;
-    initializeTimeline({
-      timeline,
-      data,
-      handleRadius,
-      sliderWidth,
-      isPlaying,
-      togglePlay,
-      rewind: () =>
-        rewind({
-          positionSetter: (value: number) => (position = value),
-          data,
-          selectDate,
-        }),
-      selectDate,
-      speed,
-      handleDrag: (event) =>
-        handleDrag(
-          event,
-          handleRadius,
-          sliderWidth,
-          (value) => {
-            position = value;
-            if (timeline) {
-              d3.select(timeline)
-                .select("circle")
-                .attr("cx", position + handleRadius);
-            }
-          },
-          data,
-          selectDate
-        ),
-      handleDragEnd,
-    });
+    try {
+      initializeTimeline({
+        timeline,
+        data,
+        handleRadius,
+        sliderWidth,
+        isPlaying,
+        togglePlay,
+        rewind: () => {
+          rewindTimeline({
+            positionSetter: (value: number) => {
+              position = value;
+              updateHandlePosition();
+            },
+            data,
+            selectDate,
+          });
+        },
+        selectDate,
+        speed,
+        handleDrag: (event) =>
+          handleDrag(
+            event,
+            handleRadius,
+            sliderWidth,
+            (value) => {
+              position = value;
+              updateHandlePosition();
+            },
+            data,
+            selectDate
+          ),
+        handleDragEnd,
+      });
+    } catch (error) {
+      console.error("Error setting slider width:", error);
+    }
+  }
+
+  function updateHandlePosition() {
+    if (timeline) {
+      d3.select(timeline)
+        .select("circle")
+        .attr("cx", position + handleRadius);
+    }
   }
 
   function togglePlay(): void {
@@ -127,7 +142,10 @@
     if (isPlaying) {
       startAutoSlide({
         data,
-        positionSetter: (value: number) => (position = value),
+        positionSetter: (value: number) => {
+          position = value;
+          updateHandlePosition();
+        },
         positionGetter: () => position,
         sliderWidth,
         speed,
