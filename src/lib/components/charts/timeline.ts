@@ -138,7 +138,6 @@ export function createPlayPauseButton(
     console.error("Error creating play/pause button:", error);
   }
 }
-
 export function createSlider(params: CreateSliderParams): void {
   const {
     container,
@@ -165,8 +164,10 @@ export function createSlider(params: CreateSliderParams): void {
       .attr("stroke-width", 2);
 
     const numOfDays = calculateNumOfDays(data);
-    for (let i = 0; i <= numOfDays; i++) {
-      const xPos = (i / numOfDays) * sliderWidth + handleRadius;
+    const daysArray = Array.from({ length: numOfDays + 1 }, (_, i) => i);
+
+    for (const day of daysArray) {
+      const xPos = (day / numOfDays) * sliderWidth + handleRadius;
       svg
         .append("line")
         .attr("x1", xPos)
